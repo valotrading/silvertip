@@ -47,7 +47,7 @@ public class Connection {
         int numKeys = selector.select(idleMsec);
 
         if (numKeys == 0) {
-          callback.timedOut();
+          callback.idle();
           continue;
         }
 

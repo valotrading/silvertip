@@ -28,7 +28,7 @@ public class PingClient implements Runnable {
           }
         }
 
-        public void timedOut() {
+        public void idle() {
           connection.send(new Message("PING\n"));
         }
       });
