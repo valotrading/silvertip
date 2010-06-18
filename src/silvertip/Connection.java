@@ -58,10 +58,6 @@ public class Connection {
           int ops = key.readyOps();
           if ((ops & SelectionKey.OP_READ) == SelectionKey.OP_READ)
             read(callback, key);
-          if ((ops & SelectionKey.OP_WRITE) == SelectionKey.OP_WRITE)
-            System.out.println("write");
-          if ((ops & SelectionKey.OP_CONNECT) == SelectionKey.OP_CONNECT)
-            System.out.println("connect");
           it.remove();
         }
       }
