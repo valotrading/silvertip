@@ -6,26 +6,29 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 public class Connection {
-  private DelimitedMessageParser parser = new DelimitedMessageParser();
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
   private SocketChannel channel;
+  private MessageParser parser;
   private boolean closed;
   private long idleMsec;
 
-  public static Connection connect(InetSocketAddress address, long idleMsec) throws IOException {
+  public static Connection connect(InetSocketAddress address, long idleMsec, MessageParser parser) throws IOException {
     SocketChannel channel = SocketChannel.open();
     channel.connect(address);
     channel.configureBlocking(false);
-    return new Connection(channel, idleMsec);
+    return new Connection(channel, idleMsec, parser);
   }
 
-  public Connection(SocketChannel channel, long idleMsec) {
-    this.channel  = channel;
+  public Connection(SocketChannel channel, long idleMsec, MessageParser parser) {
+    this.channel = channel;
     this.idleMsec = idleMsec;
+    this.parser = parser;
   }
 
   public void send(Message message) {
@@ -82,7 +85,19 @@ public class Connection {
   }
 
   private Iterator<Message> parse() throws Exception {
-    return parser.parse(rxBuffer).iterator();
+    rxBuffer.flip();
+    List<Message> result = new ArrayList<Message>();
+    while (rxBuffer.hasRemaining()) {
+      rxBuffer.mark();
+      try {
+        result.add(parser.parse(rxBuffer));
+      } catch (PartialMessageException e) {
+        rxBuffer.reset();
+        break;
+      }
+    }
+    rxBuffer.compact();
+    return result.iterator();
   }
 
   private static void close(SelectionKey key) throws IOException {

@@ -15,7 +15,7 @@ public class PingClient implements Runnable {
     int port = 4444;
 
     try {
-      final Connection connection = Connection.connect(new InetSocketAddress(hostname, port), 100);
+      final Connection connection = Connection.connect(new InetSocketAddress(hostname, port), 100, new PingPongMessageParser());
 
       connection.send(Message.fromString("HELO\n"));
       connection.wait(new Callback() {
