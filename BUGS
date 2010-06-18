@@ -1,0 +1,7 @@
+- OP_WRITE is not handled:
+
+  "Not handling the OP_WRITE correctly can make your server performance pretty
+   bad, and on win32, can produce disastrous performance problem, like freezing
+   the OS by eating all the CPU."
+
+   See http://bit.ly/aCPE2f for details.
