@@ -31,9 +31,6 @@ public class PingClient implements Runnable {
         public void timedOut() {
           connection.send(new Message("PING\n"));
         }
-
-        public void disconnected() {
-        }
       });
     } catch (IOException e) {
       throw new RuntimeException(e);
