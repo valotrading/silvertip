@@ -6,11 +6,11 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class DelimitedReceiveBufferTest {
+public class DelimitedMessageParserTest {
   private static final int RECEIVE_BUFFER_SIZE = 16;
 
   private final ByteBuffer receiveBuffer = ByteBuffer.allocate(RECEIVE_BUFFER_SIZE);
-  private final DelimitedReceiveBuffer protocol = new DelimitedReceiveBuffer();
+  private final DelimitedMessageParser protocol = new DelimitedMessageParser();
 
   @Test
   public void empty() throws Exception {

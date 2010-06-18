@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Set;
 
 public class Connection {
-  private DelimitedReceiveBuffer receiveBuffer = new DelimitedReceiveBuffer();
-  private ByteBuffer directBuffer = ByteBuffer.allocateDirect(4096);
+  private DelimitedMessageParser parser = new DelimitedMessageParser();
+  private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
   private SocketChannel channel;
-  private long idleMsec;
   private boolean closed;
+  private long idleMsec;
 
   public static Connection connect(InetSocketAddress address, long idleMsec) throws IOException {
     SocketChannel channel = SocketChannel.open();
@@ -72,7 +72,7 @@ public class Connection {
     if (sc.isOpen()) {
       int len;
       try {
-        len = sc.read(directBuffer);
+        len = sc.read(rxBuffer);
       } catch (IOException e) {
         len = -1;
       }
@@ -86,7 +86,7 @@ public class Connection {
 
   private Iterator<Message> parse() throws Exception {
     List<Message> result = new ArrayList<Message>();
-    List<String> messages = receiveBuffer.parse(directBuffer);
+    List<String> messages = parser.parse(rxBuffer);
     for (String m : messages) {
       result.add(new Message(m));
     }

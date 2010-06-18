@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DelimitedReceiveBuffer {
+public class DelimitedMessageParser {
   public List<String> parse(ByteBuffer buffer) {
     buffer.flip();
     List<String> result = process(buffer);
