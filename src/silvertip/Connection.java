@@ -74,17 +74,14 @@ public class Connection {
       try {
         len = sc.read(directBuffer);
       } catch (IOException e) {
-        e.printStackTrace();
         len = -1;
       }
-
       if (len > 0) {
         callback.messages(parse());
+      } else if (len < 0) {
+        closed = true;
       }
-      if (len < 0)
-        close(key);
-    } else
-      System.out.println("read closed");
+    }
   }
 
   private Iterator<Message> parse() throws Exception {
