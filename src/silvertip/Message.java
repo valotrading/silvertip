@@ -1,5 +1,7 @@
 package silvertip;
 
+import java.nio.ByteBuffer;
+
 public class Message {
   private final byte[] payload;
 
@@ -13,6 +15,10 @@ public class Message {
 
   public byte[] payload() {
     return payload;
+  }
+
+  public ByteBuffer toByteBuffer() {
+    return ByteBuffer.wrap(payload());
   }
 
   @Override

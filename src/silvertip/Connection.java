@@ -30,7 +30,7 @@ public class Connection {
 
   public void send(Message message) {
     try {
-      channel.write(ByteBuffer.wrap(message.payload()));
+      channel.write(message.toByteBuffer());
     } catch (IOException e) {
       closed = true;
     }
