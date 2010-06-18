@@ -20,9 +20,8 @@ public class Connection {
 
   public static Connection connect(InetSocketAddress address, long idleMsec) throws IOException {
     SocketChannel channel = SocketChannel.open();
-    channel.configureBlocking(false);
     channel.connect(address);
-    channel.finishConnect();
+    channel.configureBlocking(false);
     return new Connection(channel, idleMsec);
   }
 
