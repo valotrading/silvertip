@@ -17,19 +17,19 @@ public class PingClient implements Runnable {
     try {
       final Connection connection = Connection.connect(new InetSocketAddress(hostname, port), 100);
 
-      connection.send(new Message("HELO\n"));
+      connection.send(Message.fromString("HELO\n"));
       connection.wait(new Callback() {
         public void messages(Iterator<Message> messages) {
           while (messages.hasNext()) {
             Message m = messages.next();
-            if (m.value().equals("GBAI\n")) {
-              connection.send(new Message("GBAI\n"));
+            if (m.toString().equals("GBAI\n")) {
+              connection.send(Message.fromString("GBAI\n"));
             }
           }
         }
 
         public void idle() {
-          connection.send(new Message("PING\n"));
+          connection.send(Message.fromString("PING\n"));
         }
       });
     } catch (IOException e) {

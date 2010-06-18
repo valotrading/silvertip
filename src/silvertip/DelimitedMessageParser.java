@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DelimitedMessageParser {
-  public List<String> parse(ByteBuffer buffer) {
+  public List<Message> parse(ByteBuffer buffer) {
     buffer.flip();
-    List<String> result = process(buffer);
+    List<Message> result = process(buffer);
     buffer.compact();
     return result;
   }
@@ -17,14 +17,14 @@ public class DelimitedMessageParser {
    * <code>position()</code> of @buffer points to the beginning of the first
    * partial message (if any) when this method returns.
    */
-  private List<String> process(ByteBuffer buffer) {
-    List<String> result = new ArrayList<String>();
+  private List<Message> process(ByteBuffer buffer) {
+    List<Message> result = new ArrayList<Message>();
     for (int i = buffer.position(); i < buffer.limit(); i++) {
       byte b = buffer.get(i);
       if (b == '\n') {
         byte[] message = new byte[i - buffer.position() + 1];
         buffer.get(message);
-        result.add(new String(message));
+        result.add(new Message(message));
       }
     }
     return result;

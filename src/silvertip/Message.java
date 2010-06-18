@@ -1,13 +1,22 @@
 package silvertip;
 
 public class Message {
-  private final String value;
+  private final byte[] payload;
 
-  public Message(String value) {
-    this.value = value;
+  public static Message fromString(String s) {
+    return new Message(s.getBytes());
   }
 
-  public String  value() {
-    return value;
+  public Message(byte[] payload) {
+    this.payload = payload;
+  }
+
+  public byte[] payload() {
+    return payload;
+  }
+
+  @Override
+  public String toString() {
+    return new String(payload);
   }
 }

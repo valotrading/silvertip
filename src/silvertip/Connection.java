@@ -6,9 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 public class Connection {
@@ -32,7 +30,7 @@ public class Connection {
 
   public void send(Message message) {
     try {
-      channel.write(ByteBuffer.wrap(message.value().getBytes()));
+      channel.write(ByteBuffer.wrap(message.payload()));
     } catch (IOException e) {
       closed = true;
     }
@@ -84,12 +82,7 @@ public class Connection {
   }
 
   private Iterator<Message> parse() throws Exception {
-    List<Message> result = new ArrayList<Message>();
-    List<String> messages = parser.parse(rxBuffer);
-    for (String m : messages) {
-      result.add(new Message(m));
-    }
-    return result.iterator();
+    return parser.parse(rxBuffer).iterator();
   }
 
   private static void close(SelectionKey key) throws IOException {
