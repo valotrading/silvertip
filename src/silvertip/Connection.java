@@ -31,11 +31,15 @@ public class Connection {
     this.parser = parser;
   }
 
+  public void close() {
+    this.closed = true;
+  }
+
   public void send(Message message) {
     try {
       channel.write(message.toByteBuffer());
     } catch (IOException e) {
-      closed = true;
+      close();
     }
   }
 
@@ -79,7 +83,7 @@ public class Connection {
       if (len > 0) {
         callback.messages(parse());
       } else if (len < 0) {
-        closed = true;
+        close();
       }
     }
   }
@@ -93,6 +97,12 @@ public class Connection {
         result.add(parser.parse(rxBuffer));
       } catch (PartialMessageException e) {
         rxBuffer.reset();
+        break;
+      } catch (GarbledMessageException e) {
+        rxBuffer.reset();
+        byte[] data = new byte[rxBuffer.limit() - rxBuffer.position()];
+        rxBuffer.get(data);
+        result.add(new Message(data));
         break;
       }
     }
