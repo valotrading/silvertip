@@ -8,7 +8,7 @@ import silvertip.PartialMessageException;
 
 public class PingPongMessageParser implements MessageParser {
   /**
-   * Returns a list of complete messages that were found in @buffer. The
+   * Returns first complete message found in @buffer. The
    * <code>position()</code> of @buffer points to the beginning of the first
    * partial message (if any) when this method returns.
    * 
