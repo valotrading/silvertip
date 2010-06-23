@@ -13,8 +13,8 @@ import java.util.Set;
 
 public class Connection {
   public interface Callback {
-    void messages(Iterator<Message> messages);
-    void idle();
+    void messages(Connection connection, Iterator<Message> messages);
+    void idle(Connection connection);
   }
 
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
@@ -55,7 +55,7 @@ public class Connection {
       int numKeys = selector.select(idleMsec);
 
       if (numKeys == 0) {
-        callback.idle();
+        callback.idle(this);
         continue;
       }
 
@@ -82,7 +82,7 @@ public class Connection {
         len = -1;
       }
       if (len > 0) {
-        callback.messages(parse());
+        callback.messages(this, parse());
       } else if (len < 0) {
         close();
       }

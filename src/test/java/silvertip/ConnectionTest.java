@@ -31,7 +31,7 @@ public class ConnectionTest {
           });
       connection.wait(new Connection.Callback() {
         @Override
-        public void messages(Iterator<Message> messages) {
+        public void messages(Connection connection, Iterator<Message> messages) {
           Message m = messages.next();
           Assert.assertFalse(messages.hasNext());
           Assert.assertEquals(message, m.toString());
@@ -39,7 +39,7 @@ public class ConnectionTest {
         }
 
         @Override
-        public void idle() {
+        public void idle(Connection connection) {
           Assert.fail("idle detected");
         }
       });

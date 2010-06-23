@@ -18,7 +18,7 @@ public class PingClient implements Runnable {
 
       connection.send(Message.fromString("HELO\n"));
       connection.wait(new Connection.Callback() {
-        public void messages(Iterator<Message> messages) {
+        public void messages(Connection connection, Iterator<Message> messages) {
           while (messages.hasNext()) {
             Message m = messages.next();
             if (m.toString().equals("GBAI\n")) {
@@ -27,7 +27,7 @@ public class PingClient implements Runnable {
           }
         }
 
-        public void idle() {
+        public void idle(Connection connection) {
           connection.send(Message.fromString("PING\n"));
         }
       });
