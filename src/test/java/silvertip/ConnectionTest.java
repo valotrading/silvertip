@@ -39,6 +39,29 @@ public class ConnectionTest {
     sendMessage(message, callback, parser);
   }
 
+  @Test
+  public void partialMessage() throws Exception {
+    final String message = "The quick brown fox...";
+    Connection.Callback callback = new Connection.Callback() {
+      @Override
+      public void messages(Connection connection, Iterator<Message> messages) {
+        Assert.fail("partial message detected");
+      }
+
+      @Override
+      public void idle(Connection connection) {
+        connection.close();
+      }
+    };
+    MessageParser parser = new MessageParser() {
+      @Override
+      public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
+        throw new PartialMessageException();
+      }
+    };
+    sendMessage(message, callback, parser);
+  }
+
   private void sendMessage(final String message, Connection.Callback callback, MessageParser parser)
       throws InterruptedException, IOException {
     final int port = 4444;
@@ -47,7 +70,7 @@ public class ConnectionTest {
     serverThread.start();
     server.awaitForStart();
     try {
-      final Connection connection = Connection.connect(new InetSocketAddress("localhost", port), 1000, parser);
+      final Connection connection = Connection.connect(new InetSocketAddress("localhost", port), 100, parser);
       connection.wait(callback);
     } finally {
       server.notifyClientStopped();

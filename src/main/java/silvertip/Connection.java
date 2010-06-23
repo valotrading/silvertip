@@ -82,7 +82,10 @@ public class Connection {
         len = -1;
       }
       if (len > 0) {
-        callback.messages(this, parse());
+        Iterator<Message> messages = parse();
+        if (messages.hasNext()) {
+          callback.messages(this, messages);
+        }
       } else if (len < 0) {
         close();
       }
