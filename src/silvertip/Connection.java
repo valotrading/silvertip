@@ -43,35 +43,31 @@ public class Connection {
     }
   }
 
-  public void wait(Callback callback) {
-    try {
-      Selector selector = Selector.open();
-      SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
-      while (!closed) {
-        int numKeys = selector.select(idleMsec);
+  public void wait(Callback callback) throws IOException {
+    Selector selector = Selector.open();
+    SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+    while (!closed) {
+      int numKeys = selector.select(idleMsec);
 
-        if (numKeys == 0) {
-          callback.idle();
-          continue;
-        }
-
-        Set<SelectionKey> selectedKeys = selector.selectedKeys();
-        Iterator<SelectionKey> it = selectedKeys.iterator();
-        while (it.hasNext()) {
-          key = (SelectionKey) it.next();
-          int ops = key.readyOps();
-          if ((ops & SelectionKey.OP_READ) == SelectionKey.OP_READ)
-            read(callback, key);
-          it.remove();
-        }
+      if (numKeys == 0) {
+        callback.idle();
+        continue;
       }
-      close(key);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+
+      Set<SelectionKey> selectedKeys = selector.selectedKeys();
+      Iterator<SelectionKey> it = selectedKeys.iterator();
+      while (it.hasNext()) {
+        key = (SelectionKey) it.next();
+        int ops = key.readyOps();
+        if ((ops & SelectionKey.OP_READ) == SelectionKey.OP_READ)
+          read(callback, key);
+        it.remove();
+      }
     }
+    close(key);
   }
 
-  private void read(Callback callback, SelectionKey key) throws Exception {
+  private void read(Callback callback, SelectionKey key) throws IOException {
     SocketChannel sc = (SocketChannel) key.channel();
     if (sc.isOpen()) {
       int len;
@@ -88,7 +84,7 @@ public class Connection {
     }
   }
 
-  private Iterator<Message> parse() throws Exception {
+  private Iterator<Message> parse() throws IOException {
     rxBuffer.flip();
     List<Message> result = new ArrayList<Message>();
     while (rxBuffer.hasRemaining()) {
