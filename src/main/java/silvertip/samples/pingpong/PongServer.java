@@ -61,7 +61,8 @@ public class PongServer implements Runnable {
   }
 
   private void send(String message) {
-    out.println(message);
+    out.print(message + "\n");
+    out.flush();
     System.out.println("> " + message);
   }
 }
