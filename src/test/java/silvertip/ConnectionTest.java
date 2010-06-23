@@ -15,34 +15,40 @@ import org.junit.Test;
 public class ConnectionTest {
   @Test
   public void garbledMessage() throws Exception {
-    final int port = 4444;
     final String message = "The quick brown fox jumps over the lazy dog";
+    Connection.Callback callback = new Connection.Callback() {
+      @Override
+      public void messages(Connection connection, Iterator<Message> messages) {
+        Message m = messages.next();
+        Assert.assertFalse(messages.hasNext());
+        Assert.assertEquals(message, m.toString());
+        connection.close();
+      }
+
+      @Override
+      public void idle(Connection connection) {
+        Assert.fail("idle detected");
+      }
+    };
+    MessageParser parser = new MessageParser() {
+      @Override
+      public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
+        throw new GarbledMessageException();
+      }
+    };
+    sendMessage(message, callback, parser);
+  }
+
+  private void sendMessage(final String message, Connection.Callback callback, MessageParser parser)
+      throws InterruptedException, IOException {
+    final int port = 4444;
     StubServer server = new StubServer(port, message);
     Thread serverThread = new Thread(server);
     serverThread.start();
     server.awaitForStart();
     try {
-      final Connection connection = Connection.connect(new InetSocketAddress("localhost", port), 1000,
-          new MessageParser() {
-            @Override
-            public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
-              throw new GarbledMessageException();
-            }
-          });
-      connection.wait(new Connection.Callback() {
-        @Override
-        public void messages(Connection connection, Iterator<Message> messages) {
-          Message m = messages.next();
-          Assert.assertFalse(messages.hasNext());
-          Assert.assertEquals(message, m.toString());
-          connection.close();
-        }
-
-        @Override
-        public void idle(Connection connection) {
-          Assert.fail("idle detected");
-        }
-      });
+      final Connection connection = Connection.connect(new InetSocketAddress("localhost", port), 1000, parser);
+      connection.wait(callback);
     } finally {
       server.notifyClientStopped();
       server.awaitForStop();
