@@ -11,7 +11,7 @@ public class PingPongMessageParser implements MessageParser {
    * Returns first complete message found in @buffer. The
    * <code>position()</code> of @buffer points to the beginning of the first
    * partial message (if any) when this method returns.
-   * 
+   *
    * @throws PartialMessageException
    */
   public Message parse(ByteBuffer buffer) throws PartialMessageException {
