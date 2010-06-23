@@ -50,7 +50,7 @@ public class Connection {
 
   public void wait(Callback callback) throws IOException {
     Selector selector = Selector.open();
-    SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+    SelectionKey selectorKey = channel.register(selector, SelectionKey.OP_READ);
     while (!closed) {
       int numKeys = selector.select(idleMsec);
 
@@ -62,14 +62,13 @@ public class Connection {
       Set<SelectionKey> selectedKeys = selector.selectedKeys();
       Iterator<SelectionKey> it = selectedKeys.iterator();
       while (it.hasNext()) {
-        key = (SelectionKey) it.next();
-        int ops = key.readyOps();
-        if ((ops & SelectionKey.OP_READ) == SelectionKey.OP_READ)
+        SelectionKey key = it.next();
+        if (key.isReadable())
           read(callback, key);
         it.remove();
       }
     }
-    close(key);
+    close(selectorKey);
   }
 
   private void read(Callback callback, SelectionKey key) throws IOException {
