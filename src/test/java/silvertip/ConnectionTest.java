@@ -62,6 +62,35 @@ public class ConnectionTest {
     sendMessage(message, callback, parser);
   }
 
+  @Test
+  public void multipleMessages() throws Exception {
+    final String message = "ABC";
+    Connection.Callback callback = new Connection.Callback() {
+      @Override
+      public void messages(Connection connection, Iterator<Message> messages) {
+        Assert.assertEquals("A", messages.next().toString());
+        Assert.assertEquals("B", messages.next().toString());
+        Assert.assertEquals("C", messages.next().toString());
+        Assert.assertFalse(messages.hasNext());
+        connection.close();
+      }
+
+      @Override
+      public void idle(Connection connection) {
+        Assert.fail("idle detected");
+      }
+    };
+    MessageParser parser = new MessageParser() {
+      @Override
+      public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
+        byte[] message = new byte[1];
+        buffer.get(message);
+        return new Message(message);
+      }
+    };
+    sendMessage(message, callback, parser);
+  }
+
   private void sendMessage(final String message, Connection.Callback callback, MessageParser parser)
       throws InterruptedException, IOException {
     final int port = 4444;
