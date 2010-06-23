@@ -1,6 +1,8 @@
 - Idle time is not accounted properly if selector is woken up spuriously or if
   someone calls selector.wakeup().
 
+- Partial writes are not handled at all which may result in corrupted data
+
 - OP_WRITE is not handled:
 
   "Not handling the OP_WRITE correctly can make your server performance pretty
