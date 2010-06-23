@@ -29,7 +29,7 @@ public class ConnectionTest {
               throw new GarbledMessageException();
             }
           });
-      connection.wait(new Callback() {
+      connection.wait(new Connection.Callback() {
         @Override
         public void messages(Iterator<Message> messages) {
           Message m = messages.next();

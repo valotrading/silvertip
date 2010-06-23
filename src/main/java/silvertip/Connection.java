@@ -12,6 +12,11 @@ import java.util.List;
 import java.util.Set;
 
 public class Connection {
+  public interface Callback {
+    void messages(Iterator<Message> messages);
+    void idle();
+  }
+
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
   private SocketChannel channel;
   private MessageParser parser;

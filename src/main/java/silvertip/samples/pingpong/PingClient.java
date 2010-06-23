@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Iterator;
 
-import silvertip.Callback;
 import silvertip.Connection;
 import silvertip.Message;
 
@@ -18,7 +17,7 @@ public class PingClient implements Runnable {
       final Connection connection = Connection.connect(new InetSocketAddress(hostname, port), 100, new PingPongMessageParser());
 
       connection.send(Message.fromString("HELO\n"));
-      connection.wait(new Callback() {
+      connection.wait(new Connection.Callback() {
         public void messages(Iterator<Message> messages) {
           while (messages.hasNext()) {
             Message m = messages.next();
