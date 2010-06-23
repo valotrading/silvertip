@@ -15,40 +15,32 @@ public class FixMessageParser implements MessageParser {
   public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
     try {
       FixMessageHeader header = header(buffer);
-      byte[] payload = new byte[header.getLength()];
-      buffer.get(payload);
-      String trailer = trailer(buffer);
-      return Message.fromString(header.toString() + new String(payload) + trailer);
+      buffer.position(buffer.position() + header.getBodyLength());
+      int trailerLength = trailer(buffer);
+      byte[] message = new byte[header.getHeaderLength() + header.getBodyLength() + trailerLength];
+      buffer.reset();
+      buffer.get(message);
+      return new Message(message);
     } catch (BufferUnderflowException e) {
       throw new PartialMessageException();
     }
   }
 
   private FixMessageHeader header(ByteBuffer buffer) throws GarbledMessageException {
+    int start = buffer.position();
     match(buffer, "8=");
-    String beginString = value(buffer);
+    value(buffer);
     match(buffer, "9=");
-    String length = value(buffer);
+    String bodyLength = value(buffer);
 
-    StringBuilder header = new StringBuilder();
-    header.append("8=");
-    header.append(beginString);
-    header.append(DELIMITER);
-    header.append("9=");
-    header.append(length);
-    header.append(DELIMITER);
-    return new FixMessageHeader(header.toString(), Integer.parseInt(length));
+    return new FixMessageHeader(buffer.position() - start, Integer.parseInt(bodyLength));
   }
 
-  private String trailer(ByteBuffer buffer) throws GarbledMessageException {
+  private int trailer(ByteBuffer buffer) throws GarbledMessageException {
+    int start = buffer.position();
     match(buffer, "10=");
-    String checksum = value(buffer);
-
-    StringBuilder result = new StringBuilder();
-    result.append("10=");
-    result.append(checksum);
-    result.append(DELIMITER);
-    return result.toString();
+    value(buffer);
+    return buffer.position() - start;
   }
 
   private void match(ByteBuffer buffer, String s) throws GarbledMessageException {
@@ -70,21 +62,20 @@ public class FixMessageParser implements MessageParser {
   }
 
   private static class FixMessageHeader {
-    private final String header;
-    private final int lenght;
+    private final int headerLength;
+    private final int bodyLength;
 
-    public FixMessageHeader(String header, int length) {
-      this.header = header;
-      this.lenght = length;
+    public FixMessageHeader(int headerLength, int bodyLength) {
+      this.headerLength = headerLength;
+      this.bodyLength = bodyLength;
     }
 
-    public int getLength() {
-      return lenght;
+    public int getHeaderLength() {
+      return headerLength;
     }
 
-    @Override
-    public String toString() {
-      return header;
+    public int getBodyLength() {
+      return bodyLength;
     }
   };
 }

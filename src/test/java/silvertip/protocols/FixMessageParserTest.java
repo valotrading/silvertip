@@ -19,14 +19,18 @@ public class FixMessageParserTest {
   @Test(expected = PartialMessageException.class)
   public void empty() throws Exception {
     rxBuffer.flip();
+    rxBuffer.mark();
     parse();
   }
 
   @Test(expected = PartialMessageException.class)
   public void partialHeader() throws Exception {
     String partialHeader = "8=FIX.4.2" + DELIMITER + "9=153";
+
     rxBuffer.put(partialHeader.getBytes());
     rxBuffer.flip();
+    rxBuffer.mark();
+
     parse();
   }
 
@@ -36,6 +40,7 @@ public class FixMessageParserTest {
 
     rxBuffer.put(garbled.getBytes());
     rxBuffer.flip();
+    rxBuffer.mark();
 
     parse();
   }
@@ -46,6 +51,7 @@ public class FixMessageParserTest {
 
     rxBuffer.put(garbled.getBytes());
     rxBuffer.flip();
+    rxBuffer.mark();
 
     parse();
   }
@@ -74,6 +80,7 @@ public class FixMessageParserTest {
 
     rxBuffer.put((header + payload + trailer).getBytes());
     rxBuffer.flip();
+    rxBuffer.mark();
 
     Message message = parse();
     Assert.assertEquals(header + payload + trailer, message.toString());
