@@ -7,16 +7,13 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class PongServer implements Runnable {
-  private final CountDownLatch done;
+  private final CountDownLatch done = new CountDownLatch(1);
+  private Socket clientSocket;
   private BufferedReader in;
   private PrintWriter out;
-  private Socket clientSocket;
-
-  public PongServer(CountDownLatch done) {
-    this.done = done;
-  }
 
   public void run() {
     try {
@@ -64,5 +61,13 @@ public class PongServer implements Runnable {
     out.print(message + "\n");
     out.flush();
     System.out.println("> " + message);
+  }
+
+  public void waitForStartup() {
+    try {
+      done.await(5, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
