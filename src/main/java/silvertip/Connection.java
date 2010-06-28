@@ -107,4 +107,9 @@ public class Connection implements EventSource {
     }
     selectionKey.selector().wakeup();
   }
+
+  public boolean isClosed() {
+    SocketChannel sc = (SocketChannel) selectorKey.channel();
+    return !sc.isOpen();
+  }
 }
