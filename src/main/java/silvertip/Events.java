@@ -1,7 +1,6 @@
 package silvertip;
 
 import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.ArrayList;
@@ -23,11 +22,10 @@ public class Events {
     this.idleMsec = idleMsec;
   }
 
-  public void register(EventSource source) throws ClosedChannelException {
-    SelectionKey result = source.getChannel().register(selector, SelectionKey.OP_READ);
+  public void register(EventSource source) throws IOException {
+    SelectionKey result = source.register(selector, SelectionKey.OP_READ);
     result.attach(source);
     sources.add(source);
-    source.setSelectionKey(result);
   }
 
   public void dispatch() throws IOException {

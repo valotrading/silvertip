@@ -3,8 +3,8 @@ package silvertip;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,7 +18,7 @@ public class Connection implements EventSource {
   }
 
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
-  private SelectionKey selectorKey;
+  private SelectionKey selectionKey;
   private SocketChannel channel;
   private MessageParser parser;
   private Callback callback;
@@ -42,14 +42,8 @@ public class Connection implements EventSource {
     callback.idle(this);
   }
 
-  @Override
-  public SelectableChannel getChannel() {
-    return channel;
-  }
-
-  @Override
-  public void setSelectionKey(SelectionKey selectionKey) {
-    this.selectorKey = selectionKey;
+  public SelectionKey register(Selector selector, int ops) throws IOException {
+    return selectionKey = channel.register(selector, ops);
   }
 
   public void send(Message message) {
@@ -104,13 +98,13 @@ public class Connection implements EventSource {
   }
 
   public void close() {
-    selectorKey.attach(null);
-    selectorKey.cancel();
-    SocketChannel sc = (SocketChannel) selectorKey.channel();
+    selectionKey.attach(null);
+    selectionKey.cancel();
+    SocketChannel sc = (SocketChannel) selectionKey.channel();
     try {
       sc.close();
     } catch (IOException e) {
     }
-    selectorKey.selector().wakeup();
+    selectionKey.selector().wakeup();
   }
 }

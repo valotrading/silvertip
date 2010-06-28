@@ -9,6 +9,7 @@ import java.nio.channels.Pipe;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -37,8 +38,11 @@ public class CommandLine implements EventSource {
     this.stdinPipe = stdinPipe;
   }
 
-  @Override
-  public SelectableChannel getChannel() {
+  public SelectionKey register(Selector selector, int ops) throws IOException {
+    return selectionKey = getChannel().register(selector, ops);
+  }
+
+  private SelectableChannel getChannel() {
     try {
       return stdinPipe.getStdinChannel();
     } catch (IOException e) {
@@ -54,11 +58,6 @@ public class CommandLine implements EventSource {
       close();
     rxBuffer.flip();
     callback.commandLine(decoder.decode(rxBuffer).toString());
-  }
-
-  @Override
-  public void setSelectionKey(SelectionKey selectionKey) {
-    this.selectionKey = selectionKey;
   }
 
   @Override
