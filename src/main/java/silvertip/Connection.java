@@ -48,7 +48,10 @@ public class Connection implements EventSource {
 
   public void send(Message message) {
     try {
-      channel.write(message.toByteBuffer());
+      ByteBuffer byteBuffer = message.toByteBuffer();
+      while (byteBuffer.hasRemaining()) {
+        channel.write(byteBuffer);
+      }
     } catch (IOException e) {
       close();
     }
