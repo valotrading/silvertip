@@ -30,7 +30,7 @@ public class Events {
     source.setSelectionKey(result);
   }
 
-  public void process() throws IOException {
+  public void dispatch() throws IOException {
     for (;;) {
       int numKeys = selector.select(idleMsec);
 

@@ -102,7 +102,7 @@ public class ConnectionTest {
       final Connection connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
       Events events = Events.open(100);
       events.register(connection);
-      events.process();
+      events.dispatch();
     } finally {
       server.notifyClientStopped();
       server.awaitForStop();

@@ -41,6 +41,6 @@ public class ConsoleClient {
     Events events = Events.open(30 * 1000);
     events.register(commandLine);
     events.register(connection);
-    events.process();
+    events.dispatch();
   }
 }

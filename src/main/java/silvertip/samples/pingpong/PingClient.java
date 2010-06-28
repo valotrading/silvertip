@@ -34,7 +34,7 @@ public class PingClient implements Runnable {
       connection.send(Message.fromString("HELO\n"));
       Events events = Events.open(100);
       events.register(connection);
-      events.process();
+      events.dispatch();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
