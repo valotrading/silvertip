@@ -99,8 +99,10 @@ public class ConnectionTest {
     serverThread.start();
     server.awaitForStart();
     try {
-      final Connection connection = Connection.connect(new InetSocketAddress("localhost", port), 100, parser);
-      connection.wait(callback);
+      final Connection connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
+      Events events = Events.open(100);
+      events.register(connection);
+      events.process();
     } finally {
       server.notifyClientStopped();
       server.awaitForStop();
