@@ -15,6 +15,11 @@ public class PongServer implements Runnable {
   private BufferedReader in;
   private PrintWriter out;
 
+  public static void main(String[] args) {
+    PongServer server = new PongServer();
+    server.run();
+  }
+
   public void run() {
     try {
       setup();
