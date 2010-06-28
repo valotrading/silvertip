@@ -11,6 +11,7 @@ import java.util.Set;
 public class Events {
   private List<EventSource> sources = new ArrayList<EventSource>();
   private Selector selector;
+  private boolean stopped;
   private long idleMsec;
 
   public static Events open(long idleMsec) throws IOException {
@@ -29,7 +30,7 @@ public class Events {
   }
 
   public void dispatch() throws IOException {
-    for (;;) {
+    while (!stopped) {
       int numKeys = selector.select(idleMsec);
 
       if (selector.keys().isEmpty())
@@ -52,5 +53,9 @@ public class Events {
         it.remove();
       }
     }
+  }
+
+  public void stop() {
+    stopped = true;
   }
 }

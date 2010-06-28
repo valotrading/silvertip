@@ -15,6 +15,8 @@ public class ConsoleClient {
     String hostname = "localhost";
     int port = 4444;
 
+    final Events events = Events.open(30 * 1000);
+
     final Connection connection = Connection.connect(new InetSocketAddress(hostname, port),
         new PingPongMessageParser(), new Connection.Callback() {
           public void messages(Connection connection, Iterator<Message> messages) {
@@ -22,7 +24,7 @@ public class ConsoleClient {
               Message m = messages.next();
               if (m.toString().equals("GBAI\n")) {
                 connection.send(Message.fromString("GBAI\n"));
-                connection.close();
+                events.stop();
               }
             }
           }
@@ -38,7 +40,6 @@ public class ConsoleClient {
       }
     });
 
-    Events events = Events.open(30 * 1000);
     events.register(commandLine);
     events.register(connection);
     events.dispatch();
