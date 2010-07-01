@@ -15,7 +15,11 @@ public class FixMessageParser implements MessageParser {
   public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
     try {
       FixMessageHeader header = header(buffer);
-      buffer.position(buffer.position() + header.getBodyLength());
+      int trailerStart = buffer.position() + header.getBodyLength();
+      if (trailerStart > buffer.limit()) {
+        throw new PartialMessageException();
+      }
+      buffer.position(trailerStart);
       int trailerLength = trailer(buffer);
       byte[] message = new byte[header.getHeaderLength() + header.getBodyLength() + trailerLength];
       buffer.reset();

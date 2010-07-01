@@ -68,6 +68,17 @@ public class FixMessageParserTest {
     parse();
   }
 
+  @Test(expected = PartialMessageException.class)
+  public void partialMessage() throws Exception {
+    String header = "8=FIX.4.2" + DELIMITER + "9=153" + DELIMITER + "";
+
+    rxBuffer.put(header.getBytes());
+    rxBuffer.flip();
+    rxBuffer.mark();
+
+    parse();
+  }
+
   @Test
   public void fullMessage() throws Exception {
     String header = "8=FIX.4.2" + DELIMITER + "9=153" + DELIMITER + "";
