@@ -18,42 +18,28 @@ public class FixMessageParserTest {
 
   @Test(expected = PartialMessageException.class)
   public void empty() throws Exception {
-    rxBuffer.flip();
-    rxBuffer.mark();
-    parse();
+    parse("");
   }
 
   @Test(expected = PartialMessageException.class)
   public void partialHeader() throws Exception {
     String partialHeader = "8=FIX.4.2" + DELIMITER + "9=153";
 
-    rxBuffer.put(partialHeader.getBytes());
-    rxBuffer.flip();
-    rxBuffer.mark();
-
-    parse();
+    parse(partialHeader);
   }
 
   @Test(expected = GarbledMessageException.class)
   public void garbledBeginString() throws Exception {
     String garbled = "X=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
 
-    rxBuffer.put(garbled.getBytes());
-    rxBuffer.flip();
-    rxBuffer.mark();
-
-    parse();
+    parse(garbled);
   }
 
   @Test(expected = GarbledMessageException.class)
   public void garbledBodyLength() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "X=5" + DELIMITER;
 
-    rxBuffer.put(garbled.getBytes());
-    rxBuffer.flip();
-    rxBuffer.mark();
-
-    parse();
+    parse(garbled);
   }
 
   @Test(expected = GarbledMessageException.class)
@@ -62,21 +48,14 @@ public class FixMessageParserTest {
     String payload = "35=E" + DELIMITER;
     String trailer = "11=XXX" + DELIMITER;
 
-    rxBuffer.put((header + payload + trailer).getBytes());
-    rxBuffer.flip();
-
-    parse();
+    parse(header + payload + trailer);
   }
 
   @Test(expected = PartialMessageException.class)
   public void partialMessage() throws Exception {
     String header = "8=FIX.4.2" + DELIMITER + "9=153" + DELIMITER + "";
 
-    rxBuffer.put(header.getBytes());
-    rxBuffer.flip();
-    rxBuffer.mark();
-
-    parse();
+    parse(header);
   }
 
   @Test
@@ -89,15 +68,14 @@ public class FixMessageParserTest {
         + DELIMITER + "54=2" + DELIMITER + "38=1000" + DELIMITER + "40=1" + DELIMITER + "";
     String trailer = "10=XXX" + DELIMITER + "";
 
-    rxBuffer.put((header + payload + trailer).getBytes());
-    rxBuffer.flip();
-    rxBuffer.mark();
-
-    Message message = parse();
+    Message message = parse(header + payload + trailer);
     Assert.assertEquals(header + payload + trailer, message.toString());
   }
 
-  private Message parse() throws PartialMessageException, GarbledMessageException {
+  private Message parse(String message) throws PartialMessageException, GarbledMessageException {
+    rxBuffer.put(message.getBytes());
+    rxBuffer.flip();
+    rxBuffer.mark();
     return parser.parse(rxBuffer);
   }
 }
