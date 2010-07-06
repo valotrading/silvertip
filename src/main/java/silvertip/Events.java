@@ -70,7 +70,13 @@ public class Events {
         break;
 
       if (numKeys == 0) {
-        for (EventSource source : sources) {
+        Iterator<EventSource> it = sources.iterator();
+        while (it.hasNext()) {
+          EventSource source = it.next();
+          if (source.isClosed()) {
+            it.remove();
+            continue;
+          }
           source.timeout();
         }
         continue;

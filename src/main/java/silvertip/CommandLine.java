@@ -75,6 +75,10 @@ public class CommandLine implements EventSource {
     selectionKey.selector().wakeup();
   }
 
+  @Override public boolean isClosed() {
+    return false;
+  }
+
   private static class SystemInPipe {
     private CopyThread copyThread;
     private InputStream in;

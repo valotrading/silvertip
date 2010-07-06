@@ -10,4 +10,6 @@ public interface EventSource {
   void read(SelectionKey key) throws IOException;
 
   void timeout();
+
+  boolean isClosed();
 }
