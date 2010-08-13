@@ -6,7 +6,6 @@ import java.nio.channels.Selector;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 /**
  * The <code>Events</code> class is the heart of Silvertip, an event
@@ -70,27 +69,33 @@ public class Events {
         break;
 
       if (numKeys == 0) {
-        Iterator<EventSource> it = sources.iterator();
-        while (it.hasNext()) {
-          EventSource source = it.next();
-          if (source.isClosed()) {
-            it.remove();
-            continue;
-          }
-          source.timeout();
-        }
+        timeout();
+      } else {
+        dispatchMessages();
+      }
+    }
+  }
+
+  private void timeout() {
+    Iterator<EventSource> it = sources.iterator();
+    while (it.hasNext()) {
+      EventSource source = it.next();
+      if (source.isClosed()) {
+        it.remove();
         continue;
       }
+      source.timeout();
+    }
+  }
 
-      Set<SelectionKey> selectedKeys = selector.selectedKeys();
-      Iterator<SelectionKey> it = selectedKeys.iterator();
-      while (it.hasNext()) {
-        SelectionKey key = it.next();
-        EventSource source = (EventSource) key.attachment();
-        if (key.isReadable())
-          source.read(key);
-        it.remove();
-      }
+  private void dispatchMessages() throws IOException {
+    Iterator<SelectionKey> it = selector.selectedKeys().iterator();
+    while (it.hasNext()) {
+      SelectionKey key = it.next();
+      EventSource source = (EventSource) key.attachment();
+      if (key.isReadable())
+        source.read(key);
+      it.remove();
     }
   }
 
