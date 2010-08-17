@@ -105,6 +105,8 @@ public class Events {
       EventSource source = (EventSource) key.attachment();
       if (key.isReadable())
         source.read(key);
+      else if (key.isWritable())
+        source.write(key);
       it.remove();
     }
   }

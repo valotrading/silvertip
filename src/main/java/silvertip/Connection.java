@@ -7,6 +7,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class Connection implements EventSource {
     void idle(Connection connection);
   }
 
+  private List<ByteBuffer> txBuffers = Collections.synchronizedList(new ArrayList<ByteBuffer>());
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
   private SelectionKey selectionKey;
   private SocketChannel channel;
@@ -37,8 +39,7 @@ public class Connection implements EventSource {
     this.parser = parser;
   }
 
-  @Override
-  public void timeout() {
+  @Override public void timeout() {
     callback.idle(this);
   }
 
@@ -47,18 +48,13 @@ public class Connection implements EventSource {
   }
 
   public void send(Message message) {
-    try {
-      ByteBuffer byteBuffer = message.toByteBuffer();
-      while (byteBuffer.hasRemaining()) {
-        channel.write(byteBuffer);
-      }
-    } catch (IOException e) {
-      close();
-    }
+    txBuffers.add(message.toByteBuffer());
+    if (selectionKey == null)
+      throw new IllegalStateException("Connection is not registered");
+    selectionKey.interestOps(SelectionKey.OP_READ|SelectionKey.OP_WRITE);
   }
 
-  @Override
-  public void read(SelectionKey key) throws IOException {
+  @Override public void read(SelectionKey key) throws IOException {
     SocketChannel sc = (SocketChannel) key.channel();
     if (sc.isOpen()) {
       int len;
@@ -76,6 +72,31 @@ public class Connection implements EventSource {
         close();
       }
     }
+  }
+
+  @Override public void write(SelectionKey key) throws IOException {
+    try {
+      Iterator<ByteBuffer> it = txBuffers.iterator();
+      while (it.hasNext()) {
+        ByteBuffer txBuffer = it.next();
+        if (!write(txBuffer))
+          break;
+        it.remove();
+      }
+    } catch (IOException e) {
+      close();
+    }
+    if (txBuffers.isEmpty())
+      key.interestOps(SelectionKey.OP_READ);
+  }
+
+  private boolean write(ByteBuffer txBuffer) throws IOException {
+    while (txBuffer.hasRemaining()) {
+      if (channel.write(txBuffer) == 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private Iterator<Message> parse() throws IOException {

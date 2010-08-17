@@ -61,6 +61,11 @@ public class CommandLine implements EventSource {
   }
 
   @Override
+  public void write(SelectionKey key) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public void timeout() {
   }
 
