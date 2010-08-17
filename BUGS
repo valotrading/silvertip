@@ -8,3 +8,5 @@
    the OS by eating all the CPU."
 
    See http://bit.ly/aCPE2f for details.
+
+- FIX message payload encoding is not handled at all which might corrupt data.
