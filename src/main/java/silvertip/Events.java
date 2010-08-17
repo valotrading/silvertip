@@ -11,22 +11,28 @@ import java.util.List;
  * The <code>Events</code> class is the heart of Silvertip, an event
  * notification API for Java. The class is a wrapper on top of NIO
  * <code>Selector</code> and can be used for polling one or more event sources
- * (TCP sockets, for example) as efficiently as possible. On Linux, for example,
- * the JVM uses <code>epoll_ctl(2)</code> and <code>epoll_wait(2)</code>, under
- * the hood for <code>Events#register</code> and <code>Events#dispatch</code>,
- * respectively.
+ * (TCP sockets, for example) as efficiently as possible. On Linux, the JVM uses
+ * <code>epoll_ctl(2)</code> and <code>epoll_wait(2)</code> system calls to
+ * implement <code>Events#register</code> and <code>Events#dispatch</code>
+ * methods, respectively.
  * <p>
  * To use the API, you need to instantiate a new <code>Events</code> object and
  * register one or more <code>EventSource</code>s to it. You can then invoke
- * <code>Events#dispatch</code> to enter event dispatch loop that returns only
- * if all event sources unregister themselves or you invoke
- * <code>EventSource#stop</code>.
+ * <code>Events#dispatch</code> method to enter event dispatch loop that returns
+ * only if all event sources unregister themselves or you invoke the
+ * <code>Events#stop</code> method.
  * <p>
  * A simple example looks like this:
  *
  * <pre>
+ *   InetSocketAddress address = ...;
+ *   MessageParser parser = new MessageParser() {
+ *     public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
+ *        return new Message(buffer.array());
+ *      }
+ *   };
  *   Events events = Events.open(30*1000); // 30 second timeout
- *   Connection connection = Connection.connect(..., new Connection.Callback() {
+ *   Connection connection = Connection.connect(address, parser, new Connection.Callback() {
  *     public void messages(Connection connection, Iterator<Message> messages) {
  *       while (messages.hasNext()) {
  *         System.out.println(messages.next());
@@ -39,6 +45,10 @@ import java.util.List;
  *   events.register(connection);
  *   events.dispatch();
  * </pre>
+ * <p>
+ * The <code>MessageParser</code> interface is used for parsing a single message
+ * from a byte buffer that may contain multiple messages, including a partial
+ * message at the end of the buffer.
  */
 public class Events {
   private List<EventSource> sources = new ArrayList<EventSource>();
