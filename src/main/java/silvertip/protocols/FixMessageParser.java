@@ -15,7 +15,8 @@ public class FixMessageParser implements MessageParser {
   public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
     try {
       FixMessageHeader header = header(buffer);
-      int trailerStart = buffer.position() + header.getBodyLength();
+      int start = buffer.position();
+      int trailerStart = start + header.getBodyLength();
       if (trailerStart > buffer.limit()) {
         throw new PartialMessageException();
       }
@@ -42,15 +43,22 @@ public class FixMessageParser implements MessageParser {
 
   private int trailer(ByteBuffer buffer) throws GarbledMessageException {
     int start = buffer.position();
-    match(buffer, "10=");
-    value(buffer);
+    try {
+      match(buffer, "10=");
+      value(buffer);
+    } catch (GarbledMessageException e) {
+      buffer.position(start);
+      throw e;
+    }
     return buffer.position() - start;
   }
 
   private void match(ByteBuffer buffer, String s) throws GarbledMessageException {
     for (int i = 0; i < s.length(); i++) {
-      if (buffer.get() != s.charAt(i))
+      int c = buffer.get();
+      if (c != s.charAt(i)) {
         throw new GarbledMessageException();
+      }
     }
   }
 

@@ -51,6 +51,23 @@ public class FixMessageParserTest {
     parse(header + payload + trailer);
   }
 
+  @Test public void missingCheckSum() throws Exception {
+    String header = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
+    String payload = "35=E" + DELIMITER;
+    String trailer = "10=XXX" + DELIMITER;
+
+    rxBuffer.put((header + payload + header + payload + trailer).getBytes());
+    rxBuffer.flip();
+
+    try {
+      parse(rxBuffer);
+      Assert.fail();
+    } catch (GarbledMessageException e) {
+    }
+    Message message = parse(rxBuffer);
+    Assert.assertEquals(header + payload + trailer, message.toString());
+  }
+
   @Test(expected = PartialMessageException.class)
   public void partialMessage() throws Exception {
     String header = "8=FIX.4.2" + DELIMITER + "9=153" + DELIMITER + "";
@@ -75,7 +92,11 @@ public class FixMessageParserTest {
   private Message parse(String message) throws PartialMessageException, GarbledMessageException {
     rxBuffer.put(message.getBytes());
     rxBuffer.flip();
-    rxBuffer.mark();
-    return parser.parse(rxBuffer);
+    return parse(rxBuffer);
+  }
+
+  private Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
+    buffer.mark();
+    return parser.parse(buffer);
   }
 }
