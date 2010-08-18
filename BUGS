@@ -1,6 +1,12 @@
 - Idle time is not accounted properly if selector is woken up spuriously or if
   someone calls selector.wakeup().
 
-- Connection#send() thread-safety details are not documented.
+- OP_WRITE is not handled:
+
+  "Not handling the OP_WRITE correctly can make your server performance pretty
+   bad, and on win32, can produce disastrous performance problem, like freezing
+   the OS by eating all the CPU."
+
+   See http://bit.ly/aCPE2f for details.
 
 - FIX message payload encoding is not handled at all which might corrupt data.

@@ -8,7 +8,6 @@ public interface EventSource {
   SelectionKey register(Selector selector, int ops) throws IOException;
 
   void read(SelectionKey key) throws IOException;
-  void write(SelectionKey key) throws IOException;
 
   void timeout();
 

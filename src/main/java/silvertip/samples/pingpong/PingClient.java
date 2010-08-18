@@ -9,7 +9,8 @@ import silvertip.Events;
 import silvertip.Message;
 
 public class PingClient implements Runnable {
-  @Override public void run() {
+  @Override
+  public void run() {
     String hostname = "localhost";
     int port = 4444;
 
@@ -30,9 +31,9 @@ public class PingClient implements Runnable {
             }
           });
 
+      connection.send(Message.fromString("HELO\n"));
       Events events = Events.open(100);
       events.register(connection);
-      connection.send(Message.fromString("HELO\n"));
       events.dispatch();
     } catch (IOException e) {
       throw new RuntimeException(e);
