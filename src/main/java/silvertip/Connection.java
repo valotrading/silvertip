@@ -15,6 +15,8 @@ public class Connection implements EventSource {
     void messages(Connection connection, Iterator<Message> messages);
 
     void idle(Connection connection);
+
+    void closed(Connection connection);
   }
 
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
@@ -44,6 +46,10 @@ public class Connection implements EventSource {
 
   public SelectionKey register(Selector selector, int ops) throws IOException {
     return selectionKey = channel.register(selector, ops);
+  }
+
+  @Override public void unregister() {
+    callback.closed(this);
   }
 
   public void send(Message message) {
@@ -76,6 +82,10 @@ public class Connection implements EventSource {
         close();
       }
     }
+  }
+
+  @Override public EventSource accept(SelectionKey key) throws IOException {
+    throw new UnsupportedOperationException();
   }
 
   private Iterator<Message> parse() throws IOException {

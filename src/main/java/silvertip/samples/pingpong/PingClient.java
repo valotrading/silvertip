@@ -29,6 +29,9 @@ public class PingClient implements Runnable {
             public void idle(Connection connection) {
               connection.send(Message.fromString("PING\n"));
             }
+
+            @Override public void closed(Connection connection) {
+            }
           });
 
       connection.send(Message.fromString("HELO\n"));

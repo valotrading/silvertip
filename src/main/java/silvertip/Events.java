@@ -91,6 +91,7 @@ public class Events {
     while (it.hasNext()) {
       EventSource source = it.next();
       if (source.isClosed()) {
+        source.unregister();
         it.remove();
         continue;
       }
@@ -99,14 +100,19 @@ public class Events {
   }
 
   private void dispatchMessages() throws IOException {
+    List<EventSource> newSources = new ArrayList<EventSource>();
     Iterator<SelectionKey> it = selector.selectedKeys().iterator();
     while (it.hasNext()) {
       SelectionKey key = it.next();
       EventSource source = (EventSource) key.attachment();
+      if (key.isAcceptable())
+        newSources.add(source.accept(key));
       if (key.isReadable())
         source.read(key);
       it.remove();
     }
+    for (EventSource source : newSources)
+      register(source);
   }
 
   public void stop() {

@@ -29,6 +29,9 @@ public class ConnectionTest {
       public void idle(Connection connection) {
         Assert.fail("idle detected");
       }
+
+      @Override public void closed(Connection connection) {
+      }
     };
     MessageParser parser = new MessageParser() {
       @Override
@@ -51,6 +54,9 @@ public class ConnectionTest {
       @Override
       public void idle(Connection connection) {
         connection.close();
+      }
+
+      @Override public void closed(Connection connection) {
       }
     };
     MessageParser parser = new MessageParser() {
@@ -78,6 +84,9 @@ public class ConnectionTest {
       @Override
       public void idle(Connection connection) {
         Assert.fail("idle detected");
+      }
+
+      @Override public void closed(Connection connection) {
       }
     };
     MessageParser parser = new MessageParser() {

@@ -42,6 +42,9 @@ public class CommandLine implements EventSource {
     return selectionKey = getChannel().register(selector, ops);
   }
 
+  @Override public void unregister() {
+  }
+
   private SelectableChannel getChannel() {
     try {
       return stdinPipe.getStdinChannel();
@@ -50,8 +53,7 @@ public class CommandLine implements EventSource {
     }
   }
 
-  @Override
-  public void read(SelectionKey key) throws IOException {
+  @Override public void read(SelectionKey key) throws IOException {
     ReadableByteChannel sc = (ReadableByteChannel) key.channel();
     ByteBuffer rxBuffer = ByteBuffer.allocate(255);
     if (sc.read(rxBuffer) < 0)
@@ -60,8 +62,11 @@ public class CommandLine implements EventSource {
     callback.commandLine(decoder.decode(rxBuffer).toString());
   }
 
-  @Override
-  public void timeout() {
+  @Override public EventSource accept(SelectionKey key) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override public void timeout() {
   }
 
   public void close() {

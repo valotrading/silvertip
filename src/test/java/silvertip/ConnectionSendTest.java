@@ -56,6 +56,9 @@ public class ConnectionSendTest {
       public void messages(Connection connection, Iterator<Message> messages) {
         Assert.fail();
       }
+
+      @Override public void closed(Connection connection) {
+      }
     };
 
     final Events events = Events.open(100);

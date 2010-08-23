@@ -32,6 +32,9 @@ public class ConsoleClient {
           public void idle(Connection connection) {
             System.out.println("Idle detected.");
           }
+
+          @Override public void closed(Connection connection) {
+          }
         });
     final CommandLine commandLine = CommandLine.open(new CommandLine.Callback() {
       @Override

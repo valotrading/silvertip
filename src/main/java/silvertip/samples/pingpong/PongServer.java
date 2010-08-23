@@ -1,19 +1,20 @@
 package silvertip.samples.pingpong;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import silvertip.Connection;
+import silvertip.Events;
+import silvertip.Message;
+import silvertip.Server;
+import silvertip.Connection.Callback;
+import silvertip.Server.ConnectionFactory;
+
 public class PongServer implements Runnable {
   private final CountDownLatch done = new CountDownLatch(1);
-  private Socket clientSocket;
-  private BufferedReader in;
-  private PrintWriter out;
 
   public static void main(String[] args) {
     PongServer server = new PongServer();
@@ -22,50 +23,53 @@ public class PongServer implements Runnable {
 
   public void run() {
     try {
-      setup();
-      waitAndSend("HELO", "HELO");
-      waitAndSend("PING", "PONG");
-      waitAndSend("PING", "PONG");
-      waitAndSend("PING", "PONG");
-      sendAndWait("GBAI", "GBAI");
-      clientSocket.close();
+      final Events events = Events.open(30000);
+      Server server = Server.accept(4444, new ConnectionFactory() {
+        @Override public Connection newConnection(SocketChannel channel) {
+          return new Connection(channel, new PingPongMessageParser(), new Callback() {
+            private int pingCount;
+
+            @Override public void messages(Connection connection, Iterator<Message> messages) {
+              while (messages.hasNext()) {
+                process(connection, messages.next());
+              }
+            }
+
+            private void process(Connection connection, Message message) {
+              System.out.print("< " + message.toString());
+              if ("HELO\n".equals(message.toString()))
+                send(connection, Message.fromString("HELO\n"));
+              else if ("PING\n".equals(message.toString())) {
+                pingCount++;
+                if (pingCount < 3)
+                  send(connection, Message.fromString("PONG\n"));
+                else
+                  send(connection, Message.fromString("GBAI\n"));
+              }
+              else if ("GBAI\n".equals(message.toString()))
+                connection.close();
+            }
+
+            private void send(Connection connection, Message message) {
+              System.out.print("> " + message.toString());
+              connection.send(message);
+            }
+
+            @Override public void idle(Connection connection) {
+            }
+
+            @Override public void closed(Connection connection) {
+              events.stop();
+            }
+          });
+        }
+      });
+      events.register(server);
+      done.countDown();
+      events.dispatch();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private void setup() throws IOException {
-    ServerSocket serverSocket = new ServerSocket(4444);
-    done.countDown();
-    clientSocket = serverSocket.accept();
-    out = new PrintWriter(clientSocket.getOutputStream(), true);
-    in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-  }
-
-  private void waitAndSend(String expectedRequest, String response) throws IOException {
-    String request = receive();
-    if (!request.equals(expectedRequest))
-      throw new AssertionError("Expected: " + expectedRequest + ", but was: " + request);
-    send(response);
-  }
-
-  private void sendAndWait(String request, String expectedResponse) throws IOException {
-    send(request);
-    String response = receive();
-    if (!response.equals(expectedResponse))
-      throw new AssertionError("Expected: " + expectedResponse + ", but was: " + response);
-  }
-
-  private String receive() throws IOException {
-    String message = in.readLine();
-    System.out.println("< " + message);
-    return message;
-  }
-
-  private void send(String message) {
-    out.print(message + "\n");
-    out.flush();
-    System.out.println("> " + message);
   }
 
   public void waitForStartup() {
