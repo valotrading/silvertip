@@ -8,7 +8,7 @@ import silvertip.Message;
 import silvertip.MessageParser;
 import silvertip.PartialMessageException;
 
-public class FixMessageParser implements MessageParser {
+public class FixMessageParser implements MessageParser<Message> {
   public static final char DELIMITER = '\001';
 
   @Override

@@ -33,7 +33,7 @@ public class ConnectionTest {
       @Override public void closed(Connection connection) {
       }
     };
-    MessageParser parser = new MessageParser() {
+    MessageParser<Message> parser = new MessageParser<Message>() {
       @Override
       public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
         throw new GarbledMessageException();
@@ -59,7 +59,7 @@ public class ConnectionTest {
       @Override public void closed(Connection connection) {
       }
     };
-    MessageParser parser = new MessageParser() {
+    MessageParser<Message> parser = new MessageParser<Message>() {
       @Override
       public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
         throw new PartialMessageException();
@@ -89,7 +89,7 @@ public class ConnectionTest {
       @Override public void closed(Connection connection) {
       }
     };
-    MessageParser parser = new MessageParser() {
+    MessageParser<Message> parser = new MessageParser<Message>() {
       @Override
       public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
         byte[] message = new byte[1];
@@ -100,7 +100,7 @@ public class ConnectionTest {
     sendMessage(message, callback, parser);
   }
 
-  private void sendMessage(final String message, Connection.Callback callback, MessageParser parser)
+  private void sendMessage(final String message, Connection.Callback callback, MessageParser<?> parser)
       throws InterruptedException, IOException {
     final int port = 4444;
     StubServer server = new StubServer(port, message);

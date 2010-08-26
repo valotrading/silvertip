@@ -22,10 +22,10 @@ public class Connection implements EventSource {
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
   private SelectionKey selectionKey;
   private SocketChannel channel;
-  private MessageParser parser;
+  private MessageParser<?> parser;
   private Callback callback;
 
-  public static Connection connect(InetSocketAddress address, MessageParser parser, Callback callback)
+  public static Connection connect(InetSocketAddress address, MessageParser<?> parser, Callback callback)
       throws IOException {
     SocketChannel channel = SocketChannel.open();
     channel.connect(address);
@@ -33,7 +33,7 @@ public class Connection implements EventSource {
     return new Connection(channel, parser, callback);
   }
 
-  public Connection(SocketChannel channel, MessageParser parser, Callback callback) {
+  public Connection(SocketChannel channel, MessageParser<?> parser, Callback callback) {
     this.channel = channel;
     this.callback = callback;
     this.parser = parser;

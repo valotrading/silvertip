@@ -24,7 +24,7 @@ public class ConnectionSendTest {
     Thread serverThread = new Thread(server);
     serverThread.start();
     server.awaitForStart();
-    final MessageParser parser = new MessageParser() {
+    final MessageParser<Message> parser = new MessageParser<Message>() {
       @Override
       public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
         Assert.fail();

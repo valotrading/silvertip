@@ -6,7 +6,7 @@ import silvertip.Message;
 import silvertip.MessageParser;
 import silvertip.PartialMessageException;
 
-public class PingPongMessageParser implements MessageParser {
+public class PingPongMessageParser implements MessageParser<Message> {
   /**
    * Returns first complete message found in @buffer. The
    * <code>position()</code> of @buffer points to the beginning of the first

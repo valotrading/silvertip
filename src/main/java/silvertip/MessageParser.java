@@ -2,7 +2,7 @@ package silvertip;
 
 import java.nio.ByteBuffer;
 
-public interface MessageParser {
+public interface MessageParser<T extends Message> {
   /**
    * Parses one message from <code>buffer</code> and returns it.
    * <p>
@@ -32,5 +32,5 @@ public interface MessageParser {
    *           if the first message in <code>buffer</code> does not follow
    *           expected message format.
    */
-  Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException;
+  T parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException;
 }
