@@ -1,6 +1,5 @@
 package silvertip;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,8 +12,10 @@ import java.nio.channels.Selector;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import jline.ConsoleReader;
 
 public class CommandLine implements EventSource {
+  private static final String PROMPT = "> ";
   private static final Charset charset = Charset.forName("UTF-8");
   private static final CharsetDecoder decoder = charset.newDecoder();
 
@@ -27,7 +28,21 @@ public class CommandLine implements EventSource {
   private SystemInPipe stdinPipe;
 
   public static CommandLine open(Callback callback) throws IOException {
-    SystemInPipe stdinPipe = new SystemInPipe();
+    return open(new Console() {
+      private final ConsoleReader reader = new ConsoleReader();
+
+      @Override public void println(String string) throws IOException {
+        reader.putString(string);
+      }
+
+      @Override public String readLine(String prompt) throws IOException {
+        return reader.readLine(prompt);
+      }
+    }, callback);
+  }
+
+  public static CommandLine open(Console console, Callback callback) throws IOException {
+    SystemInPipe stdinPipe = new SystemInPipe(console);
     CommandLine result = new CommandLine(callback, stdinPipe);
     stdinPipe.start(result);
     return result;
@@ -86,20 +101,16 @@ public class CommandLine implements EventSource {
 
   private static class SystemInPipe {
     private CopyThread copyThread;
-    private InputStream in;
+    private Console console;
     private Pipe pipe;
 
-    public SystemInPipe() throws IOException {
-      this(System.in);
-    }
-
-    public SystemInPipe(InputStream in) throws IOException {
-      this.in = in;
+    public SystemInPipe(Console console) throws IOException {
+      this.console = console;
       pipe = Pipe.open();
     }
 
-    public void start(CommandLine commandLine) {
-      copyThread = new CopyThread(commandLine, in, pipe.sink());
+    public void start(CommandLine commandLine) throws IOException {
+      copyThread = new CopyThread(commandLine, console, pipe.sink());
       copyThread.start();
     }
 
@@ -112,11 +123,11 @@ public class CommandLine implements EventSource {
     private class CopyThread extends Thread {
       private final CommandLine commandLine;
       private final WritableByteChannel out;
-      private final BufferedReader in;
+      private final Console console;
 
-      CopyThread(CommandLine commandLine, InputStream in, WritableByteChannel out) {
+      CopyThread(CommandLine commandLine, Console console, WritableByteChannel out) throws IOException {
         this.commandLine = commandLine;
-        this.in = new BufferedReader(new InputStreamReader(in));
+        this.console = console;
         this.out = out;
         setDaemon(true);
       }
@@ -124,7 +135,7 @@ public class CommandLine implements EventSource {
       public void run() {
         try {
           for (;;) {
-            String line = in.readLine();
+            String line = console.readLine(PROMPT);
             if (line == null)
               break;
             ByteBuffer buffer = ByteBuffer.wrap(line.getBytes());
