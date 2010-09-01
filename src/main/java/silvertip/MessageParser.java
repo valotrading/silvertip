@@ -28,9 +28,6 @@ public interface MessageParser<T extends Message> {
    * 
    * @throws PartialMessageException
    *           if <code>buffer</code> does not have one full message in it.
-   * @throws GarbledMessageException
-   *           if the first message in <code>buffer</code> does not follow
-   *           expected message format.
    */
-  T parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException;
+  T parse(ByteBuffer buffer) throws PartialMessageException;
 }

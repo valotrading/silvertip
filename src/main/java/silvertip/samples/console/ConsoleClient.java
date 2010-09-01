@@ -17,9 +17,9 @@ public class ConsoleClient {
 
     final Events events = Events.open(30 * 1000);
 
-    final Connection connection = Connection.connect(new InetSocketAddress(hostname, port),
-        new PingPongMessageParser(), new Connection.Callback() {
-          public void messages(Connection connection, Iterator<Message> messages) {
+    final Connection<Message> connection = Connection.connect(new InetSocketAddress(hostname, port),
+        new PingPongMessageParser(), new Connection.Callback<Message>() {
+          public void messages(Connection<Message> connection, Iterator<Message> messages) {
             while (messages.hasNext()) {
               Message m = messages.next();
               if (m.toString().equals("GBAI\n")) {
@@ -29,11 +29,11 @@ public class ConsoleClient {
             }
           }
 
-          public void idle(Connection connection) {
+          public void idle(Connection<Message> connection) {
             System.out.println("Idle detected.");
           }
 
-          @Override public void closed(Connection connection) {
+          @Override public void closed(Connection<Message> connection) {
           }
         });
     final CommandLine commandLine = CommandLine.open(new CommandLine.Callback() {

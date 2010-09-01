@@ -28,44 +28,38 @@ public class FixMessageParserTest {
     parse(partialHeader);
   }
 
-  @Test(expected = GarbledMessageException.class)
-  public void garbledBeginString() throws Exception {
+  @Test public void garbledBeginString() throws Exception {
     String garbled = "X=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
 
-    parse(garbled);
+    Assert.assertEquals(garbled, parse(garbled).toString());
   }
 
-  @Test(expected = GarbledMessageException.class)
-  public void garbledBodyLength() throws Exception {
+  @Test public void garbledBodyLength() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "X=5" + DELIMITER;
 
-    parse(garbled);
+    Assert.assertEquals(garbled, parse(garbled).toString());
   }
 
-  @Test(expected = GarbledMessageException.class)
-  public void garbledCheckSum() throws Exception {
+  @Test public void garbledCheckSum() throws Exception {
     String header = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
     String payload = "35=E" + DELIMITER;
     String trailer = "11=XXX" + DELIMITER;
+    String message = header + payload + trailer;
 
-    parse(header + payload + trailer);
+    Assert.assertEquals(message, parse(message).toString());
   }
 
   @Test public void missingCheckSum() throws Exception {
     String header = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
     String payload = "35=E" + DELIMITER;
     String trailer = "10=XXX" + DELIMITER;
+    String garbledMessage = header + payload + header + payload + trailer;
 
-    rxBuffer.put((header + payload + header + payload + trailer).getBytes());
+    rxBuffer.put(garbledMessage.getBytes());
     rxBuffer.flip();
 
-    try {
-      parse(rxBuffer);
-      Assert.fail();
-    } catch (GarbledMessageException e) {
-    }
     Message message = parse(rxBuffer);
-    Assert.assertEquals(header + payload + trailer, message.toString());
+    Assert.assertEquals(garbledMessage, message.toString());
   }
 
   @Test(expected = PartialMessageException.class)

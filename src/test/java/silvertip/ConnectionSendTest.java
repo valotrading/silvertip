@@ -26,16 +26,16 @@ public class ConnectionSendTest {
     server.awaitForStart();
     final MessageParser<Message> parser = new MessageParser<Message>() {
       @Override
-      public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
+      public Message parse(ByteBuffer buffer) throws PartialMessageException {
         Assert.fail();
         return null;
       }
     };
-    final Connection.Callback callback = new Connection.Callback() {
+    final Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       private int count;
 
       @Override
-      public void idle(Connection connection) {
+      public void idle(Connection<Message> connection) {
         Message message = newMessage();
         for (int i = 0; i < 10; i++) {
           connection.send(message);
@@ -53,16 +53,16 @@ public class ConnectionSendTest {
       }
 
       @Override
-      public void messages(Connection connection, Iterator<Message> messages) {
+      public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.fail();
       }
 
-      @Override public void closed(Connection connection) {
+      @Override public void closed(Connection<Message> connection) {
       }
     };
 
     final Events events = Events.open(100);
-    final Connection connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
+    final Connection<Message> connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
     events.register(connection);
     events.dispatch();
     server.awaitForStop();

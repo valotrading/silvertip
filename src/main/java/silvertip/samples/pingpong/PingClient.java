@@ -15,9 +15,9 @@ public class PingClient implements Runnable {
     int port = 4444;
 
     try {
-      final Connection connection = Connection.connect(new InetSocketAddress(hostname, port),
-          new PingPongMessageParser(), new Connection.Callback() {
-            public void messages(Connection connection, Iterator<Message> messages) {
+      final Connection<Message> connection = Connection.connect(new InetSocketAddress(hostname, port),
+          new PingPongMessageParser(), new Connection.Callback<Message>() {
+            public void messages(Connection<Message> connection, Iterator<Message> messages) {
               while (messages.hasNext()) {
                 Message m = messages.next();
                 if (m.toString().equals("GBAI\n")) {
@@ -26,11 +26,11 @@ public class PingClient implements Runnable {
               }
             }
 
-            public void idle(Connection connection) {
+            public void idle(Connection<Message> connection) {
               connection.send(Message.fromString("PING\n"));
             }
 
-            @Override public void closed(Connection connection) {
+            @Override public void closed(Connection<Message> connection) {
             }
           });
 

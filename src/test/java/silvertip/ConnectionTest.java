@@ -16,9 +16,9 @@ public class ConnectionTest {
   @Test
   public void garbledMessage() throws Exception {
     final String message = "The quick brown fox jumps over the lazy dog";
-    Connection.Callback callback = new Connection.Callback() {
+    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override
-      public void messages(Connection connection, Iterator<Message> messages) {
+      public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Message m = messages.next();
         Assert.assertFalse(messages.hasNext());
         Assert.assertEquals(message, m.toString());
@@ -26,17 +26,19 @@ public class ConnectionTest {
       }
 
       @Override
-      public void idle(Connection connection) {
+      public void idle(Connection<Message> connection) {
         Assert.fail("idle detected");
       }
 
-      @Override public void closed(Connection connection) {
+      @Override public void closed(Connection<Message> connection) {
       }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
       @Override
-      public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
-        throw new GarbledMessageException();
+      public Message parse(ByteBuffer buffer) throws PartialMessageException {
+        byte[] data = new byte[buffer.limit() - buffer.position()];
+        buffer.get(data);
+        return new Message(data);
       }
     };
     sendMessage(message, callback, parser);
@@ -45,23 +47,23 @@ public class ConnectionTest {
   @Test
   public void partialMessage() throws Exception {
     final String message = "The quick brown fox...";
-    Connection.Callback callback = new Connection.Callback() {
+    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override
-      public void messages(Connection connection, Iterator<Message> messages) {
+      public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.fail("partial message detected");
       }
 
       @Override
-      public void idle(Connection connection) {
+      public void idle(Connection<Message> connection) {
         connection.close();
       }
 
-      @Override public void closed(Connection connection) {
+      @Override public void closed(Connection<Message> connection) {
       }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
       @Override
-      public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
+      public Message parse(ByteBuffer buffer) throws PartialMessageException {
         throw new PartialMessageException();
       }
     };
@@ -71,9 +73,9 @@ public class ConnectionTest {
   @Test
   public void multipleMessages() throws Exception {
     final String message = "ABC";
-    Connection.Callback callback = new Connection.Callback() {
+    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override
-      public void messages(Connection connection, Iterator<Message> messages) {
+      public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.assertEquals("A", messages.next().toString());
         Assert.assertEquals("B", messages.next().toString());
         Assert.assertEquals("C", messages.next().toString());
@@ -82,16 +84,16 @@ public class ConnectionTest {
       }
 
       @Override
-      public void idle(Connection connection) {
+      public void idle(Connection<Message> connection) {
         Assert.fail("idle detected");
       }
 
-      @Override public void closed(Connection connection) {
+      @Override public void closed(Connection<Message> connection) {
       }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
       @Override
-      public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
+      public Message parse(ByteBuffer buffer) throws PartialMessageException {
         byte[] message = new byte[1];
         buffer.get(message);
         return new Message(message);
@@ -100,7 +102,7 @@ public class ConnectionTest {
     sendMessage(message, callback, parser);
   }
 
-  private void sendMessage(final String message, Connection.Callback callback, MessageParser<?> parser)
+  private void sendMessage(final String message, Connection.Callback<Message> callback, MessageParser<Message> parser)
       throws InterruptedException, IOException {
     final int port = 4444;
     StubServer server = new StubServer(port, message);
@@ -108,7 +110,7 @@ public class ConnectionTest {
     serverThread.start();
     server.awaitForStart();
     try {
-      final Connection connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
+      final Connection<Message> connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
       Events events = Events.open(100);
       events.register(connection);
       events.dispatch();

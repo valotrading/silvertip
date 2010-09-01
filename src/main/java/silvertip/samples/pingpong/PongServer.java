@@ -24,18 +24,18 @@ public class PongServer implements Runnable {
   public void run() {
     try {
       final Events events = Events.open(30000);
-      Server server = Server.accept(4444, new ConnectionFactory() {
-        @Override public Connection newConnection(SocketChannel channel) {
-          return new Connection(channel, new PingPongMessageParser(), new Callback() {
+      Server server = Server.accept(4444, new ConnectionFactory<Message>() {
+        @Override public Connection<Message> newConnection(SocketChannel channel) {
+          return new Connection<Message>(channel, new PingPongMessageParser(), new Callback<Message>() {
             private int pingCount;
 
-            @Override public void messages(Connection connection, Iterator<Message> messages) {
+            @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
               while (messages.hasNext()) {
                 process(connection, messages.next());
               }
             }
 
-            private void process(Connection connection, Message message) {
+            private void process(Connection<Message> connection, Message message) {
               System.out.print("< " + message.toString());
               if ("HELO\n".equals(message.toString()))
                 send(connection, Message.fromString("HELO\n"));
@@ -50,15 +50,15 @@ public class PongServer implements Runnable {
                 connection.close();
             }
 
-            private void send(Connection connection, Message message) {
+            private void send(Connection<Message> connection, Message message) {
               System.out.print("> " + message.toString());
               connection.send(message);
             }
 
-            @Override public void idle(Connection connection) {
+            @Override public void idle(Connection<Message> connection) {
             }
 
-            @Override public void closed(Connection connection) {
+            @Override public void closed(Connection<Message> connection) {
               events.stop();
             }
           });

@@ -1,34 +1,32 @@
 package silvertip.protocols;
 
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
+import silvertip.AbstractMessageParser;
 import silvertip.GarbledMessageException;
 import silvertip.Message;
-import silvertip.MessageParser;
 import silvertip.PartialMessageException;
 
-public class FixMessageParser implements MessageParser<Message> {
+public class FixMessageParser extends AbstractMessageParser<Message> {
   public static final char DELIMITER = '\001';
 
-  @Override
-  public Message parse(ByteBuffer buffer) throws PartialMessageException, GarbledMessageException {
-    try {
-      FixMessageHeader header = header(buffer);
-      int start = buffer.position();
-      int trailerStart = start + header.getBodyLength();
-      if (trailerStart > buffer.limit()) {
-        throw new PartialMessageException();
-      }
-      buffer.position(trailerStart);
-      int trailerLength = trailer(buffer);
-      byte[] message = new byte[header.getHeaderLength() + header.getBodyLength() + trailerLength];
-      buffer.reset();
-      buffer.get(message);
-      return new Message(message);
-    } catch (BufferUnderflowException e) {
+  @Override protected byte[] onParse(ByteBuffer buffer) throws GarbledMessageException, PartialMessageException {
+    FixMessageHeader header = header(buffer);
+    int start = buffer.position();
+    int trailerStart = start + header.getBodyLength();
+    if (trailerStart > buffer.limit()) {
       throw new PartialMessageException();
     }
+    buffer.position(trailerStart);
+    int trailerLength = trailer(buffer);
+    byte[] message = new byte[header.getHeaderLength() + header.getBodyLength() + trailerLength];
+    buffer.reset();
+    buffer.get(message);
+    return message;
+  }
+
+  @Override protected Message newMessage(byte[] data) {
+    return new Message(data);
   }
 
   private FixMessageHeader header(ByteBuffer buffer) throws GarbledMessageException {
@@ -89,5 +87,5 @@ public class FixMessageParser implements MessageParser<Message> {
     public int getBodyLength() {
       return bodyLength;
     }
-  };
+  }
 }

@@ -10,30 +10,30 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class Connection implements EventSource {
-  public interface Callback {
-    void messages(Connection connection, Iterator<Message> messages);
+public class Connection<T extends Message> implements EventSource {
+  public interface Callback<T extends Message> {
+    void messages(Connection<T> connection, Iterator<T> messages);
 
-    void idle(Connection connection);
+    void idle(Connection<T> connection);
 
-    void closed(Connection connection);
+    void closed(Connection<T> connection);
   }
 
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
   private SelectionKey selectionKey;
   private SocketChannel channel;
-  private MessageParser<?> parser;
-  private Callback callback;
+  private MessageParser<T> parser;
+  private Callback<T> callback;
 
-  public static Connection connect(InetSocketAddress address, MessageParser<?> parser, Callback callback)
+  public static <T extends Message> Connection<T> connect(InetSocketAddress address, MessageParser<T> parser, Callback<T> callback)
       throws IOException {
     SocketChannel channel = SocketChannel.open();
     channel.connect(address);
     channel.configureBlocking(false);
-    return new Connection(channel, parser, callback);
+    return new Connection<T>(channel, parser, callback);
   }
 
-  public Connection(SocketChannel channel, MessageParser<?> parser, Callback callback) {
+  public Connection(SocketChannel channel, MessageParser<T> parser, Callback<T> callback) {
     this.channel = channel;
     this.callback = callback;
     this.parser = parser;
@@ -74,7 +74,7 @@ public class Connection implements EventSource {
         len = -1;
       }
       if (len > 0) {
-        Iterator<Message> messages = parse();
+        Iterator<T> messages = parse();
         if (messages.hasNext()) {
           callback.messages(this, messages);
         }
@@ -88,21 +88,15 @@ public class Connection implements EventSource {
     throw new UnsupportedOperationException();
   }
 
-  private Iterator<Message> parse() throws IOException {
+  private Iterator<T> parse() throws IOException {
     rxBuffer.flip();
-    List<Message> result = new ArrayList<Message>();
+    List<T> result = new ArrayList<T>();
     while (rxBuffer.hasRemaining()) {
       rxBuffer.mark();
       try {
         result.add(parser.parse(rxBuffer));
       } catch (PartialMessageException e) {
         rxBuffer.reset();
-        break;
-      } catch (GarbledMessageException e) {
-        rxBuffer.reset();
-        byte[] data = new byte[rxBuffer.limit() - rxBuffer.position()];
-        rxBuffer.get(data);
-        result.add(new Message(data));
         break;
       }
     }

@@ -8,21 +8,21 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 public class Server implements EventSource {
-  public interface ConnectionFactory {
-    Connection newConnection(SocketChannel channel);
+  public interface ConnectionFactory<T extends Message> {
+    Connection<T> newConnection(SocketChannel channel);
   }
 
   private final ServerSocketChannel serverChannel;
-  private final ConnectionFactory factory;
+  private final ConnectionFactory<?> factory;
 
-  public static Server accept(int port, ConnectionFactory factory) throws IOException {
+  public static Server accept(int port, ConnectionFactory<?> factory) throws IOException {
     ServerSocketChannel serverChannel = ServerSocketChannel.open();
     serverChannel.configureBlocking(false);
     serverChannel.socket().bind(new InetSocketAddress(port));
     return new Server(serverChannel, factory);
   }
 
-  public Server(ServerSocketChannel serverChannel, ConnectionFactory factory) {
+  public Server(ServerSocketChannel serverChannel, ConnectionFactory<?> factory) {
     this.serverChannel = serverChannel;
     this.factory = factory;
   }
