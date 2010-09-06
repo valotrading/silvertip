@@ -1,8 +1,6 @@
 package silvertip;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.channels.Pipe;
 import java.nio.channels.ReadableByteChannel;
@@ -12,6 +10,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+
 import jline.ConsoleReader;
 
 public class CommandLine implements EventSource {
