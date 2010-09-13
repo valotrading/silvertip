@@ -2,7 +2,7 @@ package silvertip;
 
 import java.nio.ByteBuffer;
 
-public interface MessageParser<T extends Message> {
+public interface MessageParser<T> {
   /**
    * Parses one message from <code>buffer</code> and returns it.
    * <p>

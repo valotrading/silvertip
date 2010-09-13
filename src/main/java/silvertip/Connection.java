@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class Connection<T extends Message> implements EventSource {
-  public interface Callback<T extends Message> {
+public class Connection<T> implements EventSource {
+  public interface Callback<T> {
     void messages(Connection<T> connection, Iterator<T> messages);
 
     void idle(Connection<T> connection);
@@ -25,7 +25,7 @@ public class Connection<T extends Message> implements EventSource {
   private MessageParser<T> parser;
   private Callback<T> callback;
 
-  public static <T extends Message> Connection<T> connect(InetSocketAddress address, MessageParser<T> parser, Callback<T> callback)
+  public static <T> Connection<T> connect(InetSocketAddress address, MessageParser<T> parser, Callback<T> callback)
       throws IOException {
     SocketChannel channel = SocketChannel.open();
     channel.connect(address);
@@ -52,15 +52,22 @@ public class Connection<T extends Message> implements EventSource {
     callback.closed(this);
   }
 
-  public void send(Message message) {
+  public void send(ByteBuffer buffer) {
     try {
-      ByteBuffer byteBuffer = message.toByteBuffer();
-      while (byteBuffer.hasRemaining()) {
-        channel.write(byteBuffer);
+      while (buffer.hasRemaining()) {
+        channel.write(buffer);
       }
     } catch (IOException e) {
       close();
     }
+  }
+
+  public void send(byte[] byteArray) {
+    send(ByteBuffer.wrap(byteArray));
+  }
+
+  public void send(Message message) {
+    send(message.toByteBuffer());
   }
 
   @Override

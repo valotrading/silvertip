@@ -3,7 +3,7 @@ package silvertip;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
-public abstract class AbstractMessageParser<T extends Message> implements MessageParser<T> {
+public abstract class AbstractMessageParser<T> implements MessageParser<T> {
   @Override final public T parse(ByteBuffer buffer) throws PartialMessageException {
     try {
       byte[] data = onParse(buffer);

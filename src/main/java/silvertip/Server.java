@@ -8,7 +8,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 public class Server implements EventSource {
-  public interface ConnectionFactory<T extends Message> {
+  public interface ConnectionFactory<T> {
     Connection<T> newConnection(SocketChannel channel);
   }
 
