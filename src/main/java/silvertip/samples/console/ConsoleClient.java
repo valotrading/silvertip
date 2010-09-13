@@ -7,7 +7,6 @@ import java.util.Iterator;
 import silvertip.CommandLine;
 import silvertip.Connection;
 import silvertip.Events;
-import silvertip.Message;
 import silvertip.samples.pingpong.PingPongMessageParser;
 
 public class ConsoleClient {
@@ -17,29 +16,29 @@ public class ConsoleClient {
 
     final Events events = Events.open(30 * 1000);
 
-    final Connection<Message> connection = Connection.connect(new InetSocketAddress(hostname, port),
-        new PingPongMessageParser(), new Connection.Callback<Message>() {
-          public void messages(Connection<Message> connection, Iterator<Message> messages) {
+    final Connection<String> connection = Connection.connect(new InetSocketAddress(hostname, port),
+        new PingPongMessageParser(), new Connection.Callback<String>() {
+          public void messages(Connection<String> connection, Iterator<String> messages) {
             while (messages.hasNext()) {
-              Message m = messages.next();
-              if (m.toString().equals("GBAI\n")) {
-                connection.send(Message.fromString("GBAI\n"));
+              String m = messages.next();
+              if ("GBAI\n".equals(m)) {
+                connection.send("GBAI\n".getBytes());
                 events.stop();
               }
             }
           }
 
-          public void idle(Connection<Message> connection) {
+          public void idle(Connection<String> connection) {
             System.out.println("Idle detected.");
           }
 
-          @Override public void closed(Connection<Message> connection) {
+          @Override public void closed(Connection<String> connection) {
           }
         });
     final CommandLine commandLine = CommandLine.open(new CommandLine.Callback() {
       @Override
       public void commandLine(String commandLine) {
-        connection.send(Message.fromString(commandLine + "\n"));
+        connection.send((commandLine + "\n").getBytes());
       }
     });
 

@@ -6,7 +6,6 @@ import java.util.Iterator;
 
 import silvertip.Connection;
 import silvertip.Events;
-import silvertip.Message;
 
 public class PingClient implements Runnable {
   @Override
@@ -15,26 +14,26 @@ public class PingClient implements Runnable {
     int port = 4444;
 
     try {
-      final Connection<Message> connection = Connection.connect(new InetSocketAddress(hostname, port),
-          new PingPongMessageParser(), new Connection.Callback<Message>() {
-            public void messages(Connection<Message> connection, Iterator<Message> messages) {
+      final Connection<String> connection = Connection.connect(new InetSocketAddress(hostname, port),
+          new PingPongMessageParser(), new Connection.Callback<String>() {
+            public void messages(Connection<String> connection, Iterator<String> messages) {
               while (messages.hasNext()) {
-                Message m = messages.next();
-                if (m.toString().equals("GBAI\n")) {
-                  connection.send(Message.fromString("GBAI\n"));
+                String m = messages.next();
+                if ("GBAI\n".equals(m)) {
+                  connection.send("GBAI\n".getBytes());
                 }
               }
             }
 
-            public void idle(Connection<Message> connection) {
-              connection.send(Message.fromString("PING\n"));
+            public void idle(Connection<String> connection) {
+              connection.send("PING\n".getBytes());
             }
 
-            @Override public void closed(Connection<Message> connection) {
+            @Override public void closed(Connection<String> connection) {
             }
           });
 
-      connection.send(Message.fromString("HELO\n"));
+      connection.send("HELO\n".getBytes());
       Events events = Events.open(100);
       events.register(connection);
       events.dispatch();

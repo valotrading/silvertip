@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import org.junit.Assert;
 import org.junit.Test;
 
-import silvertip.Message;
 import silvertip.PartialMessageException;
 
 public class PingPongMessageParserTest {
@@ -30,11 +29,11 @@ public class PingPongMessageParserTest {
   public void completeMessage() throws Exception {
     receiveBuffer.put("PONG\n".getBytes());
     receiveBuffer.flip();
-    Message message = parse();
-    Assert.assertEquals("PONG\n", message.toString());
+    String message = parse();
+    Assert.assertEquals("PONG\n", message);
   }
 
-  private Message parse() throws PartialMessageException {
+  private String parse() throws PartialMessageException {
     return protocol.parse(receiveBuffer);
   }
 }
