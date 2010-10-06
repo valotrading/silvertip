@@ -34,6 +34,12 @@ public class FixMessageParserTest {
     Assert.assertEquals(garbled, parse(garbled).toString());
   }
 
+  @Test public void emptyBeginString() throws Exception {
+    String garbled = "8=" + DELIMITER + "9=5" + DELIMITER;
+
+    Assert.assertEquals(garbled, parse(garbled).toString());
+  }
+
   @Test public void garbledBodyLength() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "X=5" + DELIMITER;
 
@@ -42,6 +48,12 @@ public class FixMessageParserTest {
 
   @Test public void invalidBodyLengthFormat() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "9=XXX" + DELIMITER;
+
+    Assert.assertEquals(garbled, parse(garbled).toString());
+  }
+
+  @Test public void emptyBodyLength() throws Exception {
+    String garbled = "8=FIX.4.2" + DELIMITER + "9=" + DELIMITER;
 
     Assert.assertEquals(garbled, parse(garbled).toString());
   }
