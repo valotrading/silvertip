@@ -33,10 +33,17 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
     int start = buffer.position();
     match(buffer, "8=");
     value(buffer);
-    match(buffer, "9=");
-    String bodyLength = value(buffer);
+    int bodyLength = bodyLength(buffer);
+    return new FixMessageHeader(buffer.position() - start, bodyLength);
+  }
 
-    return new FixMessageHeader(buffer.position() - start, Integer.parseInt(bodyLength));
+  private int bodyLength(ByteBuffer buffer) throws GarbledMessageException {
+    try {
+      match(buffer, "9=");
+      return Integer.parseInt(value(buffer));
+    } catch (NumberFormatException e) {
+      throw new GarbledMessageException();
+    }
   }
 
   private int trailer(ByteBuffer buffer) throws GarbledMessageException {

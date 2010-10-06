@@ -40,6 +40,12 @@ public class FixMessageParserTest {
     Assert.assertEquals(garbled, parse(garbled).toString());
   }
 
+  @Test public void invalidBodyLengthFormat() throws Exception {
+    String garbled = "8=FIX.4.2" + DELIMITER + "9=XXX" + DELIMITER;
+
+    Assert.assertEquals(garbled, parse(garbled).toString());
+  }
+
   @Test public void garbledCheckSum() throws Exception {
     String header = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
     String payload = "35=E" + DELIMITER;
