@@ -31,13 +31,17 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
 
   private FixMessageHeader header(ByteBuffer buffer) throws GarbledMessageException {
     int start = buffer.position();
-    match(buffer, "8=");
-    value(buffer);
+    beginString(buffer);
     int bodyLength = bodyLength(buffer);
     int headerLength = buffer.position() - start;
     match(buffer, "35=");
     value(buffer);
     return new FixMessageHeader(headerLength, bodyLength);
+  }
+
+  private void beginString(ByteBuffer buffer) throws GarbledMessageException {
+    match(buffer, "8=");
+    value(buffer);
   }
 
   private int bodyLength(ByteBuffer buffer) throws GarbledMessageException {
