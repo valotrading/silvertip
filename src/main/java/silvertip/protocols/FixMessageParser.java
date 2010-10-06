@@ -34,8 +34,7 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
     beginString(buffer);
     int bodyLength = bodyLength(buffer);
     int headerLength = buffer.position() - start;
-    match(buffer, "35=");
-    value(buffer);
+    msgType(buffer);
     return new FixMessageHeader(headerLength, bodyLength);
   }
 
@@ -51,6 +50,11 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
     } catch (NumberFormatException e) {
       throw new GarbledMessageException();
     }
+  }
+
+  private void msgType(ByteBuffer buffer) throws GarbledMessageException {
+    match(buffer, "35=");
+    value(buffer);
   }
 
   private int trailer(ByteBuffer buffer) throws GarbledMessageException {
