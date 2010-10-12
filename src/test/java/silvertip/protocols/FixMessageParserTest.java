@@ -58,18 +58,6 @@ public class FixMessageParserTest {
     Assert.assertEquals(garbled, parse(garbled).toString());
   }
 
-  @Test public void garbledMsgType() throws Exception {
-    String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER + "X=A";
-
-    Assert.assertEquals(garbled, parse(garbled).toString());
-  }
-
-  @Test public void emptyMsgType() throws Exception {
-    String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER + "35=" + DELIMITER;
-
-    Assert.assertEquals(garbled, parse(garbled).toString());
-  }
-
   @Test public void garbledCheckSum() throws Exception {
     String header = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
     String payload = "35=E" + DELIMITER;

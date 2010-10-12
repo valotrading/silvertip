@@ -34,10 +34,7 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
     match(buffer, "8=");
     value(buffer);
     int bodyLength = bodyLength(buffer);
-    int headerLength = buffer.position() - start;
-    match(buffer, "35=");
-    value(buffer);
-    return new FixMessageHeader(headerLength, bodyLength);
+    return new FixMessageHeader(buffer.position() - start, bodyLength);
   }
 
   private int bodyLength(ByteBuffer buffer) throws GarbledMessageException {
