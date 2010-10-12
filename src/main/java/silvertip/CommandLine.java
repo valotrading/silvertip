@@ -76,6 +76,10 @@ public class CommandLine implements EventSource {
     callback.commandLine(decoder.decode(rxBuffer).toString());
   }
 
+  @Override public void write(SelectionKey key) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
   @Override public EventSource accept(SelectionKey key) throws IOException {
     throw new UnsupportedOperationException();
   }

@@ -7,6 +7,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class Connection<T> implements EventSource {
     void closed(Connection<T> connection);
   }
 
+  private List<ByteBuffer> txBuffers = Collections.synchronizedList(new ArrayList<ByteBuffer>());
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
   private SelectionKey selectionKey;
   private SocketChannel channel;
@@ -53,13 +55,10 @@ public class Connection<T> implements EventSource {
   }
 
   public void send(ByteBuffer buffer) {
-    try {
-      while (buffer.hasRemaining()) {
-        channel.write(buffer);
-      }
-    } catch (IOException e) {
-      close();
-    }
+    txBuffers.add(buffer);
+    if (selectionKey == null)
+      throw new IllegalStateException("Connection is not registered");
+    selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
   }
 
   public void send(byte[] byteArray) {
@@ -70,8 +69,7 @@ public class Connection<T> implements EventSource {
     send(message.toByteBuffer());
   }
 
-  @Override
-  public void read(SelectionKey key) throws IOException {
+  @Override public void read(SelectionKey key) throws IOException {
     SocketChannel sc = (SocketChannel) key.channel();
     if (sc.isOpen()) {
       int len;
@@ -89,6 +87,31 @@ public class Connection<T> implements EventSource {
         close();
       }
     }
+  }
+
+  @Override public void write(SelectionKey key) throws IOException {
+    try {
+      Iterator<ByteBuffer> it = txBuffers.iterator();
+      while (it.hasNext()) {
+        ByteBuffer txBuffer = it.next();
+        if (!write(txBuffer))
+          break;
+        it.remove();
+      }
+    } catch (IOException e) {
+      close();
+    }
+    if (txBuffers.isEmpty())
+      key.interestOps(SelectionKey.OP_READ);
+  }
+
+  private boolean write(ByteBuffer txBuffer) throws IOException {
+    while (txBuffer.hasRemaining()) {
+      if (channel.write(txBuffer) == 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override public EventSource accept(SelectionKey key) throws IOException {
@@ -112,6 +135,11 @@ public class Connection<T> implements EventSource {
   }
 
   public void close() {
+    try {
+      if (!txBuffers.isEmpty())
+        write(selectionKey);
+    } catch (IOException e) {
+    }
     selectionKey.attach(null);
     selectionKey.cancel();
     SocketChannel sc = (SocketChannel) selectionKey.channel();
