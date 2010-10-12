@@ -67,7 +67,7 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
     }
   }
 
-  private String value(ByteBuffer buffer) throws GarbledMessageException {
+  private String value(ByteBuffer buffer) {
     StringBuilder result = new StringBuilder();
     for (;;) {
       byte ch = buffer.get();
@@ -75,8 +75,6 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
         break;
       result.append((char) ch);
     }
-    if (result.length() == 0)
-      throw new GarbledMessageException();
     return result.toString();
   }
 
