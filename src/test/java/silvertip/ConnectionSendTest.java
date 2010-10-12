@@ -5,7 +5,10 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Assert;
@@ -33,21 +36,30 @@ public class ConnectionSendTest {
     };
     final Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       private int count;
+      private int start;
 
       @Override
       public void idle(Connection<Message> connection) {
-        Message message = newMessage();
-        for (int i = 0; i < 10; i++) {
-          connection.send(message);
+        Random generator = new Random();
+        List<Message> messages = new ArrayList<Message>();
+        for (int i = 0; i < 100; i++) {
+          int end = start + generator.nextInt(1024);
+          Message message = newMessage(start, end);
+          messages.add(message);
+          start = end;
+        }
+        for (Message m : messages) {
+          connection.send(m);
         }
         if (++count == 10)
           connection.close();
       }
 
-      private Message newMessage() {
-        byte[] m = new byte[256*8];
-        for (int j = 0; j < m.length; j++) {
-          m[j] = (byte) (j % 256);
+      private Message newMessage(int start, int end) {
+        byte[] m = new byte[end-start];
+        int i = 0;
+        for (int j = start; j < end; j++) {
+          m[i++] = (byte) (j % 256);
         }
         return new Message(m);
       }

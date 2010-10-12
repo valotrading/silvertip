@@ -38,6 +38,10 @@ public class Server implements EventSource {
     throw new UnsupportedOperationException();
   }
 
+  @Override public void write(SelectionKey key) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
   @Override public EventSource accept(SelectionKey key) throws IOException {
     ServerSocketChannel sch = (ServerSocketChannel) key.channel();
     SocketChannel channel = sch.accept();
