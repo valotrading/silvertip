@@ -109,8 +109,6 @@ public class Events {
         newSources.add(source.accept(key));
       if (key.isReadable())
         source.read(key);
-      else if (key.isWritable())
-        source.write(key);
       it.remove();
     }
     for (EventSource source : newSources)

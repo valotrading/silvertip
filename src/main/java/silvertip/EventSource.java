@@ -11,8 +11,6 @@ public interface EventSource {
 
   void read(SelectionKey key) throws IOException;
 
-  void write(SelectionKey key) throws IOException;
-
   EventSource accept(SelectionKey key) throws IOException;
 
   void timeout();

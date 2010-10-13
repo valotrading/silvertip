@@ -32,9 +32,10 @@ public class PingClient implements Runnable {
             @Override public void closed(Connection<String> connection) {
             }
           });
+
+      connection.send("HELO\n".getBytes());
       Events events = Events.open(100);
       events.register(connection);
-      connection.send("HELO\n".getBytes());
       events.dispatch();
     } catch (IOException e) {
       throw new RuntimeException(e);
