@@ -91,18 +91,22 @@ public class Connection<T> implements EventSource {
 
   @Override public void write(SelectionKey key) throws IOException {
     try {
-      Iterator<ByteBuffer> it = txBuffers.iterator();
-      while (it.hasNext()) {
-        ByteBuffer txBuffer = it.next();
-        if (!write(txBuffer))
-          break;
-        it.remove();
-      }
+      flush();
     } catch (IOException e) {
       close();
     }
     if (txBuffers.isEmpty())
       key.interestOps(SelectionKey.OP_READ);
+  }
+
+  private void flush() throws IOException {
+    Iterator<ByteBuffer> it = txBuffers.iterator();
+    while (it.hasNext()) {
+      ByteBuffer txBuffer = it.next();
+      if (!write(txBuffer))
+        break;
+      it.remove();
+    }
   }
 
   private boolean write(ByteBuffer txBuffer) throws IOException {
@@ -136,8 +140,8 @@ public class Connection<T> implements EventSource {
 
   public void close() {
     try {
-      if (!txBuffers.isEmpty())
-        write(selectionKey);
+      while (!txBuffers.isEmpty())
+        flush();
     } catch (IOException e) {
     }
     selectionKey.attach(null);
