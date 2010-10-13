@@ -41,32 +41,12 @@ public class Connection<T> implements EventSource {
     this.parser = parser;
   }
 
-  @Override
-  public void timeout() {
-    callback.idle(this);
-  }
-
-  public SelectionKey register(Selector selector, int ops) throws IOException {
+  @Override public SelectionKey register(Selector selector, int ops) throws IOException {
     return selectionKey = channel.register(selector, ops);
   }
 
   @Override public void unregister() {
     callback.closed(this);
-  }
-
-  public void send(ByteBuffer buffer) {
-    txBuffers.add(buffer);
-    if (selectionKey == null)
-      throw new IllegalStateException("Connection is not registered");
-    selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-  }
-
-  public void send(byte[] byteArray) {
-    send(ByteBuffer.wrap(byteArray));
-  }
-
-  public void send(Message message) {
-    send(message.toByteBuffer());
   }
 
   @Override public void read(SelectionKey key) throws IOException {
@@ -89,6 +69,37 @@ public class Connection<T> implements EventSource {
     }
   }
 
+  private Iterator<T> parse() throws IOException {
+    rxBuffer.flip();
+    List<T> result = new ArrayList<T>();
+    while (rxBuffer.hasRemaining()) {
+      rxBuffer.mark();
+      try {
+        result.add(parser.parse(rxBuffer));
+      } catch (PartialMessageException e) {
+        rxBuffer.reset();
+        break;
+      }
+    }
+    rxBuffer.compact();
+    return result.iterator();
+  }
+
+  public void send(byte[] byteArray) {
+    send(ByteBuffer.wrap(byteArray));
+  }
+
+  public void send(Message message) {
+    send(message.toByteBuffer());
+  }
+
+  public void send(ByteBuffer buffer) {
+    txBuffers.add(buffer);
+    if (selectionKey == null)
+      throw new IllegalStateException("Connection is not registered");
+    selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+  }
+
   @Override public void write(SelectionKey key) throws IOException {
     try {
       flush();
@@ -97,6 +108,22 @@ public class Connection<T> implements EventSource {
     }
     if (txBuffers.isEmpty())
       key.interestOps(SelectionKey.OP_READ);
+  }
+
+  public void close() {
+    try {
+      while (!txBuffers.isEmpty())
+        flush();
+    } catch (IOException e) {
+    }
+    selectionKey.attach(null);
+    selectionKey.cancel();
+    SocketChannel sc = (SocketChannel) selectionKey.channel();
+    try {
+      sc.close();
+    } catch (IOException e) {
+    }
+    selectionKey.selector().wakeup();
   }
 
   private void flush() throws IOException {
@@ -118,43 +145,15 @@ public class Connection<T> implements EventSource {
     return true;
   }
 
+  @Override public void timeout() {
+    callback.idle(this);
+  }
+
   @Override public EventSource accept(SelectionKey key) throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  private Iterator<T> parse() throws IOException {
-    rxBuffer.flip();
-    List<T> result = new ArrayList<T>();
-    while (rxBuffer.hasRemaining()) {
-      rxBuffer.mark();
-      try {
-        result.add(parser.parse(rxBuffer));
-      } catch (PartialMessageException e) {
-        rxBuffer.reset();
-        break;
-      }
-    }
-    rxBuffer.compact();
-    return result.iterator();
-  }
-
-  public void close() {
-    try {
-      while (!txBuffers.isEmpty())
-        flush();
-    } catch (IOException e) {
-    }
-    selectionKey.attach(null);
-    selectionKey.cancel();
-    SocketChannel sc = (SocketChannel) selectionKey.channel();
-    try {
-      sc.close();
-    } catch (IOException e) {
-    }
-    selectionKey.selector().wakeup();
-  }
-
-  public boolean isClosed() {
+  @Override public boolean isClosed() {
     SocketChannel sc = (SocketChannel) selectionKey.channel();
     return !sc.isOpen();
   }
