@@ -61,7 +61,7 @@ public class ConnectionSendTest {
       }
       for (Message m : messages) {
         connection.send(m);
-        total += m.toString().length();
+        total += m.toByteBuffer().limit();
       }
       if (++count == 10) {
         connection.close();
