@@ -6,6 +6,7 @@ import java.nio.channels.Selector;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The <code>Events</code> class is the heart of Silvertip, an event
@@ -72,17 +73,24 @@ public class Events {
   }
 
   public void dispatch() throws IOException {
+    long timeout = idleMsec;
     while (!stopped) {
-      int numKeys = selector.select(idleMsec);
+      long start = System.nanoTime();
+      int numKeys = selector.select(timeout);
+      long end = System.nanoTime();
 
       if (selector.keys().isEmpty())
         break;
 
       if (numKeys == 0) {
+        timeout -= TimeUnit.NANOSECONDS.toMillis(end - start);
+        if (timeout > 0)
+          continue;
         timeout();
       } else {
         dispatchMessages();
       }
+      timeout = idleMsec;
     }
   }
 
@@ -119,5 +127,6 @@ public class Events {
 
   public void stop() {
     stopped = true;
+    selector.wakeup();
   }
 }

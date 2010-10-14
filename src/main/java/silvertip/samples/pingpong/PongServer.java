@@ -22,7 +22,7 @@ public class PongServer implements Runnable {
 
   public void run() {
     try {
-      final Events events = Events.open(30000);
+      final Events events = Events.open(50);
       Server server = Server.accept(4444, new ConnectionFactory<String>() {
         @Override public Connection<String> newConnection(SocketChannel channel) {
           return new Connection<String>(channel, new PingPongMessageParser(), new Callback<String>() {

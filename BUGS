@@ -1,4 +1,1 @@
-- Idle time is not accounted properly if selector is woken up spuriously or if
-  someone calls selector.wakeup().
-
 - FIX message payload encoding is not handled at all which might corrupt data.
