@@ -9,6 +9,12 @@ public class GarbledMessageException extends Exception {
     super(message);
   }
 
+  public GarbledMessageException(String message, byte[] messageData) {
+    super(message);
+
+    this.messageData = messageData;
+  }
+
   public byte[] getMessageData() {
     return messageData;
   }
