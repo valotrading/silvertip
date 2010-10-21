@@ -28,7 +28,7 @@ public class FixMessageParserTest {
     parse(partialHeader);
   }
 
-  @Test public void garbledBeginString() throws Exception {
+  @Test public void firstFieldIsNotBeginString() throws Exception {
     String garbled = "X=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
 
     assertGarbledMessage(garbled);
