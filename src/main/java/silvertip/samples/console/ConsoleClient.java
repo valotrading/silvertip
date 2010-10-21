@@ -34,6 +34,9 @@ public class ConsoleClient {
 
           @Override public void closed(Connection<String> connection) {
           }
+
+          @Override public void garbledMessage(String message, byte[] data) {
+          }
         });
     final CommandLine commandLine = CommandLine.open(new CommandLine.Callback() {
       @Override

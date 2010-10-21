@@ -31,6 +31,9 @@ public class PingClient implements Runnable {
 
             @Override public void closed(Connection<String> connection) {
             }
+
+            @Override public void garbledMessage(String message, byte[] data) {
+            }
           });
       Events events = Events.open(100);
       events.register(connection);

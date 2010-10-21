@@ -84,6 +84,9 @@ public class ConnectionSendTest {
 
     @Override public void closed(Connection<Message> connection) {
     }
+
+    @Override public void garbledMessage(String message, byte[] data) {
+    }
   }
 
   private final class StubServer implements Runnable {

@@ -60,6 +60,9 @@ public class PongServer implements Runnable {
             @Override public void closed(Connection<String> connection) {
               events.stop();
             }
+
+            @Override public void garbledMessage(String message, byte[] data) {
+            }
           });
         }
       });

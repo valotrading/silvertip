@@ -41,6 +41,9 @@ public class ConnectionTest {
 
       @Override public void closed(Connection<Message> connection) {
       }
+
+      @Override public void garbledMessage(String message, byte[] data) {
+      }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
       @Override
@@ -68,6 +71,9 @@ public class ConnectionTest {
       }
 
       @Override public void closed(Connection<Message> connection) {
+      }
+
+      @Override public void garbledMessage(String message, byte[] data) {
       }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
@@ -98,6 +104,9 @@ public class ConnectionTest {
       }
 
       @Override public void closed(Connection<Message> connection) {
+      }
+
+      @Override public void garbledMessage(String message, byte[] data) {
       }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
@@ -132,6 +141,9 @@ public class ConnectionTest {
       }
 
       @Override public void closed(Connection<Message> connection) {
+      }
+
+      @Override public void garbledMessage(String message, byte[] data) {
       }
     };
     sendMessage("", callback, null);

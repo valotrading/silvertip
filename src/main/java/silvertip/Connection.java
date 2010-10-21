@@ -18,6 +18,8 @@ public class Connection<T> implements EventSource {
     void idle(Connection<T> connection);
 
     void closed(Connection<T> connection);
+
+    void garbledMessage(String message, byte[] data);
   }
 
   private List<ByteBuffer> txBuffers = Collections.synchronizedList(new ArrayList<ByteBuffer>());
