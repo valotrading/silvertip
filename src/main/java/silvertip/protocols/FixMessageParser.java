@@ -39,8 +39,17 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
     String beginString = parseField(buffer, Tag.BEGIN_STRING);
     if (!isBeginStringValid(beginString))
       throw new GarbledMessageException(Tag.BEGIN_STRING + " is invalid, expected format FIX.m.n: " + beginString);
+    int bodyLength = bodyLength(buffer);
+    return new FixMessageHeader(buffer.position() - start, bodyLength, buffer.position());
+  }
+
+  private int bodyLength(ByteBuffer buffer) throws GarbledMessageException {
     String bodyLength = parseField(buffer, Tag.BODY_LENGTH);
-    return new FixMessageHeader(buffer.position() - start, Integer.parseInt(bodyLength), buffer.position());
+    try {
+      return Integer.parseInt(bodyLength);
+    } catch (NumberFormatException e) {
+      throw new GarbledMessageException(Tag.BODY_LENGTH + " has invalid format: " + bodyLength);
+    }
   }
 
   private boolean isBeginStringValid(String beginString) {
