@@ -46,7 +46,7 @@ public class FixMessageParserTest {
     assertGarbledMessage(garbled);
   }
 
-  @Test public void garbledBodyLength() throws Exception {
+  @Test public void secondFieldIsNotBodyLength() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "X=5" + DELIMITER;
 
     assertGarbledMessage(garbled);
