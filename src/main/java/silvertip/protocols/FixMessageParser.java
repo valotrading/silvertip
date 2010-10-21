@@ -97,7 +97,7 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
     for (int i = 0; i < expected.length(); i++) {
       int c = buffer.get();
       if (c != expected.charAt(i)) {
-        throw new GarbledMessageException();
+        throw new GarbledMessageException("Expected tag not found: " + tag);
       }
     }
   }
