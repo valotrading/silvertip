@@ -37,14 +37,13 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
       throw new PartialMessageException();
     }
     buffer.position(trailerStart);
-    int start = buffer.position();
     try {
       parseField(buffer, Tag.CHECKSUM);
     } catch (GarbledMessageException e) {
-      buffer.position(start);
+      buffer.position(header.getBodyStart());
       throw e;
     }
-    return buffer.position() - start;
+    return buffer.position() - trailerStart;
   }
 
   private String parseField(ByteBuffer buffer, Tag tag) throws GarbledMessageException {
