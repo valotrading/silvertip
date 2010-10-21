@@ -40,6 +40,12 @@ public class FixMessageParserTest {
     assertGarbledMessage(garbled);
   }
 
+  @Test public void invalidBeginString() throws Exception {
+    String garbled = "8=XIF.10.1" + DELIMITER + "9=5" + DELIMITER;
+
+    assertGarbledMessage(garbled);
+  }
+
   @Test public void garbledBodyLength() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "X=5" + DELIMITER;
 

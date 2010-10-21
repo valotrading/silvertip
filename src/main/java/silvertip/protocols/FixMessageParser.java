@@ -35,10 +35,16 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
 
   private FixMessageHeader header(ByteBuffer buffer) throws GarbledMessageException {
     int start = buffer.position();
-    parseField(buffer, Tag.BEGIN_STRING);
+    String beginString = parseField(buffer, Tag.BEGIN_STRING);
+    if (!isBeginStringValid(beginString))
+      throw new GarbledMessageException(Tag.BEGIN_STRING + " is invalid, expected format FIX.m.n: " + beginString);
     String bodyLength = parseField(buffer, Tag.BODY_LENGTH);
-
     return new FixMessageHeader(buffer.position() - start, Integer.parseInt(bodyLength), buffer.position());
+  }
+
+  private boolean isBeginStringValid(String beginString) {
+    return beginString.startsWith("FIX.") && Character.isDigit(beginString.charAt(4)) &&
+      Character.isDigit(beginString.charAt(6));
   }
 
   private int trailer(ByteBuffer buffer, FixMessageHeader header) throws GarbledMessageException, PartialMessageException {
