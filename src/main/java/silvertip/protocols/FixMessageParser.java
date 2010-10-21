@@ -31,10 +31,8 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
 
   private FixMessageHeader header(ByteBuffer buffer) throws GarbledMessageException {
     int start = buffer.position();
-    match(buffer, "8=");
-    value(buffer);
-    match(buffer, "9=");
-    String bodyLength = value(buffer);
+    parseField(buffer, 8);
+    String bodyLength = parseField(buffer, 9);
 
     return new FixMessageHeader(buffer.position() - start, Integer.parseInt(bodyLength));
   }
@@ -42,13 +40,17 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
   private int trailer(ByteBuffer buffer) throws GarbledMessageException {
     int start = buffer.position();
     try {
-      match(buffer, "10=");
-      value(buffer);
+      parseField(buffer, 10);
     } catch (GarbledMessageException e) {
       buffer.position(start);
       throw e;
     }
     return buffer.position() - start;
+  }
+
+  private String parseField(ByteBuffer buffer, int tag) throws GarbledMessageException {
+    match(buffer, tag + "=");
+    return value(buffer);
   }
 
   private void match(ByteBuffer buffer, String s) throws GarbledMessageException {
