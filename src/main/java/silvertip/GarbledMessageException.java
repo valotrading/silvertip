@@ -5,6 +5,13 @@ public class GarbledMessageException extends Exception {
 
   private byte[] messageData;
 
+  public GarbledMessageException() {
+  }
+
+  public GarbledMessageException(String message) {
+    super(message);
+  }
+
   public byte[] getMessageData() {
     return messageData;
   }
