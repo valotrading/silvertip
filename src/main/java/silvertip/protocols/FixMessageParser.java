@@ -55,12 +55,21 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
     }
     buffer.position(trailerStart);
     try {
-      parseField(buffer, Tag.CHECKSUM);
+      parseChecksum(buffer);
     } catch (GarbledMessageException e) {
       buffer.position(header.getBodyStart());
       throw e;
     }
     return buffer.position() - trailerStart;
+  }
+
+  private int parseChecksum(ByteBuffer buffer) throws GarbledMessageException {
+    String checksum = parseField(buffer, Tag.CHECKSUM);
+    try {
+      return Integer.parseInt(checksum);
+    } catch (NumberFormatException e) {
+      throw new GarbledMessageException(Tag.CHECKSUM + " has invalid format: " + checksum);
+    }
   }
 
   private String parseField(ByteBuffer buffer, Tag tag) throws GarbledMessageException {

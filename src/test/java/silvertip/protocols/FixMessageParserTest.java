@@ -82,6 +82,12 @@ public class FixMessageParserTest {
     assertGarbledMessage(message);
   }
 
+  @Test public void invalidCheckSumFormat() throws Exception {
+    String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER + "35=E" + DELIMITER + "10=XYZ" + DELIMITER;
+
+    assertGarbledMessage(garbled);
+  }
+
   @Test(expected = PartialMessageException.class)
   public void partialMessage() throws Exception {
     String header = "8=FIX.4.2" + DELIMITER + "9=153" + DELIMITER + "";
@@ -97,7 +103,7 @@ public class FixMessageParserTest {
         + DELIMITER + "11=order-1" + DELIMITER + "67=1" + DELIMITER + "55=IBM" + DELIMITER + "54=2" + DELIMITER
         + "38=2000" + DELIMITER + "40=1" + DELIMITER + "11=order-2" + DELIMITER + "67=2" + DELIMITER + "55=AOL"
         + DELIMITER + "54=2" + DELIMITER + "38=1000" + DELIMITER + "40=1" + DELIMITER + "";
-    String trailer = "10=XXX" + DELIMITER + "";
+    String trailer = "10=100" + DELIMITER + "";
 
     Message message = parse(header + payload + trailer);
     Assert.assertEquals(header + payload + trailer, message.toString());
