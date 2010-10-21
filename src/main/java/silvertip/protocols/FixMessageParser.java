@@ -53,9 +53,13 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
     if (trailerStart > buffer.limit()) {
       throw new PartialMessageException();
     }
+    buffer.reset();
+    int expectedCheckSum = checksum(buffer, header.getHeaderLength() + header.getBodyLength());
     buffer.position(trailerStart);
     try {
-      parseChecksum(buffer);
+      int checksum = parseChecksum(buffer);
+      if (expectedCheckSum != checksum)
+        throw new GarbledMessageException(Tag.CHECKSUM + " mismatch, expected=" + expectedCheckSum + ", actual=" + checksum);
     } catch (GarbledMessageException e) {
       buffer.position(header.getBodyStart());
       throw e;
@@ -127,6 +131,14 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
     /* Set the buffer position to the beginning of BeginString(8) */
     buffer.position(buffer.position() - beginString.length() + 1);
     return true;
+  }
+
+  private int checksum(ByteBuffer b, int end) {
+    int checksum = 0;
+    for (int i = 0; i < end; i++) {
+      checksum += b.get();
+    }
+    return checksum % 256;
   }
 
   private static class FixMessageHeader {
