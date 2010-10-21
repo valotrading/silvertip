@@ -82,7 +82,7 @@ public class Connection<T> implements EventSource {
         rxBuffer.reset();
         break;
       } catch (GarbledMessageException e) {
-        /* Ignore garbled message */
+        callback.garbledMessage(e.getMessage(), e.getMessageData());
       }
     }
     rxBuffer.compact();
