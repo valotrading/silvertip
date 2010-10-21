@@ -71,6 +71,7 @@ public class ConnectionTest {
       }
 
       @Override public void garbledMessage(String message, byte[] data) {
+        Assert.fail("partial message should not be treated as garbled");
       }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
@@ -104,6 +105,7 @@ public class ConnectionTest {
       }
 
       @Override public void garbledMessage(String message, byte[] data) {
+        Assert.fail("none of the messages should be treated as garbled");
       }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
@@ -141,6 +143,7 @@ public class ConnectionTest {
       }
 
       @Override public void garbledMessage(String message, byte[] data) {
+        Assert.fail();
       }
     };
     sendMessage("", callback, null);
