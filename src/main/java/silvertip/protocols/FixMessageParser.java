@@ -1,5 +1,6 @@
 package silvertip.protocols;
 
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
 import silvertip.AbstractMessageParser;
@@ -19,8 +20,9 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
       buffer.get(message);
       return message;
     } catch (GarbledMessageException e) {
+      int nextMessagePosition = nextMessagePosition(buffer);
       buffer.reset();
-      byte[] data = new byte[buffer.limit() - buffer.position()];
+      byte[] data = new byte[nextMessagePosition - buffer.position()];
       buffer.get(data);
       e.setMessageData(data);
       throw e;
@@ -78,6 +80,33 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
       result.append((char) ch);
     }
     return result.toString();
+  }
+
+  private int nextMessagePosition(ByteBuffer buffer) {
+    /* Store the original position to which the buffer is finally rewound. */
+    int start = buffer.position();
+    try {
+      while (buffer.hasRemaining()) {
+        if (skipToBeginString(buffer))
+          return buffer.position();
+      }
+      return buffer.position();
+    } catch (BufferUnderflowException e) {
+      return buffer.position();
+    } finally {
+      buffer.position(start);
+    }
+  }
+
+  private boolean skipToBeginString(ByteBuffer buffer) {
+    String beginString = DELIMITER + "8=";
+    for (int i = 0; i < beginString.length(); i++) {
+      if (buffer.get() != beginString.charAt(i))
+        return false;
+    }
+    /* Set the buffer position to the beginning of BeginString(8) */
+    buffer.position(buffer.position() - beginString.length() + 1);
+    return true;
   }
 
   private static class FixMessageHeader {
