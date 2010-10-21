@@ -14,6 +14,7 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
   @Override protected byte[] onParse(ByteBuffer buffer) throws GarbledMessageException, PartialMessageException {
     try {
       FixMessageHeader header = header(buffer);
+      parseField(buffer, Tag.MSG_TYPE);
       int trailerLength = trailer(buffer, header);
       byte[] message = new byte[header.getHeaderLength() + header.getBodyLength() + trailerLength];
       buffer.reset();
