@@ -64,15 +64,6 @@ public class FixMessageParserTest {
     assertGarbledMessage(garbled);
   }
 
-  @Test public void garbledCheckSum() throws Exception {
-    String header = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
-    String payload = "35=E" + DELIMITER;
-    String trailer = "11=XXX" + DELIMITER;
-    String message = header + payload + trailer;
-
-    assertGarbledMessage(message);
-  }
-
   @Test public void missingCheckSum() throws Exception {
     String header = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
     String payload = "35=E" + DELIMITER;
