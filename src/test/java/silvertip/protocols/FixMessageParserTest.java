@@ -144,7 +144,7 @@ public class FixMessageParserTest {
   }
 
   private void assertGarbledMessage(String garbledMessage) throws Exception {
-    assertGarbledMessage(garbledMessage, garbledMessage);
+    assertGarbledMessage(garbledMessage + "8=FIX.4.2", garbledMessage);
   }
 
   private void assertGarbledMessage(String messages, String expectedGarbledMessage) throws Exception {
