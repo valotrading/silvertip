@@ -65,6 +65,8 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
 
   private int parseChecksum(ByteBuffer buffer) throws GarbledMessageException {
     String checksum = parseField(buffer, Tag.CHECKSUM);
+    if (checksum.length() != 3)
+      throw new GarbledMessageException(Tag.CHECKSUM + " has invalid length: " + checksum);
     try {
       return Integer.parseInt(checksum);
     } catch (NumberFormatException e) {

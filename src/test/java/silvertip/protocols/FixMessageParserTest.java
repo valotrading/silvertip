@@ -88,6 +88,12 @@ public class FixMessageParserTest {
     assertGarbledMessage(garbled);
   }
 
+  @Test public void invalidCheckSumLength() throws Exception {
+    String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER + "35=E" + DELIMITER + "10=12" + DELIMITER;
+
+    assertGarbledMessage(garbled);
+  }
+
   @Test(expected = PartialMessageException.class)
   public void partialMessage() throws Exception {
     String header = "8=FIX.4.2" + DELIMITER + "9=153" + DELIMITER + "";
