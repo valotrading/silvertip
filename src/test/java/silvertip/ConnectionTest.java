@@ -28,29 +28,26 @@ public class ConnectionTest {
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override
       public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Message m = messages.next();
-        Assert.assertFalse(messages.hasNext());
-        Assert.assertEquals(message, m.toString());
-        connection.close();
+        Assert.fail();
       }
 
       @Override
       public void idle(Connection<Message> connection) {
-        Assert.fail("idle detected");
+        connection.close();
       }
 
       @Override public void closed(Connection<Message> connection) {
       }
 
-      @Override public void garbledMessage(String message, byte[] data) {
+      @Override public void garbledMessage(String garbledMessage, byte[] data) {
+        Assert.assertEquals(message, new String(data));
       }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
-      @Override
-      public Message parse(ByteBuffer buffer) throws PartialMessageException {
+      @Override public Message parse(ByteBuffer buffer) throws GarbledMessageException, PartialMessageException {
         byte[] data = new byte[buffer.limit() - buffer.position()];
         buffer.get(data);
-        return new Message(data);
+        throw new GarbledMessageException("garbled message", data);
       }
     };
     sendMessage(message, callback, parser);
