@@ -64,6 +64,16 @@ public class FixMessageParserTest {
     assertGarbledMessage(garbled);
   }
 
+  @Test public void bodyLengthDoesNotPointToStandardTrailer() throws Exception {
+    String header = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
+    String payload = "35=E" + DELIMITER;
+    String trailer = "10=XXX" + DELIMITER;
+    String messages = header + payload + header + payload + trailer;
+    String garbled = header + payload;
+
+    assertGarbledMessage(messages, garbled);
+  }
+
   @Test public void thirdFieldIsNotMsgType() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER + "X=A" + DELIMITER;
 
