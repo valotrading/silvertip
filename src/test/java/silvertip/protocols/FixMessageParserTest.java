@@ -52,6 +52,12 @@ public class FixMessageParserTest {
     assertGarbledMessage(garbled);
   }
 
+  @Test public void emptyBodyLength() throws Exception {
+    String garbled = "8=FIX.4.2" + DELIMITER + "9=" + DELIMITER + "108=XXX" + DELIMITER;
+
+    assertGarbledMessage(garbled);
+  }
+
   @Test public void thirdFieldIsNotMsgType() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER + "X=A" + DELIMITER;
 
