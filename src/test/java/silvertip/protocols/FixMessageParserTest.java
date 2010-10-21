@@ -31,13 +31,13 @@ public class FixMessageParserTest {
   @Test public void garbledBeginString() throws Exception {
     String garbled = "X=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
 
-    Assert.assertEquals(garbled, parse(garbled).toString());
+    assertGarbledMessage(garbled);
   }
 
   @Test public void garbledBodyLength() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "X=5" + DELIMITER;
 
-    Assert.assertEquals(garbled, parse(garbled).toString());
+    assertGarbledMessage(garbled);
   }
 
   @Test public void garbledCheckSum() throws Exception {
@@ -46,20 +46,16 @@ public class FixMessageParserTest {
     String trailer = "11=XXX" + DELIMITER;
     String message = header + payload + trailer;
 
-    Assert.assertEquals(message, parse(message).toString());
+    assertGarbledMessage(message);
   }
 
   @Test public void missingCheckSum() throws Exception {
     String header = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
     String payload = "35=E" + DELIMITER;
-    String trailer = "10=XXX" + DELIMITER;
-    String garbledMessage = header + payload + header + payload + trailer;
+    String trailer = "11=XXX" + DELIMITER;
+    String message = header + payload + trailer;
 
-    rxBuffer.put(garbledMessage.getBytes());
-    rxBuffer.flip();
-
-    Message message = parse(rxBuffer);
-    Assert.assertEquals(garbledMessage, message.toString());
+    assertGarbledMessage(message);
   }
 
   @Test(expected = PartialMessageException.class)
@@ -81,6 +77,19 @@ public class FixMessageParserTest {
 
     Message message = parse(header + payload + trailer);
     Assert.assertEquals(header + payload + trailer, message.toString());
+  }
+
+  private void assertGarbledMessage(String garbledMessage) throws Exception {
+    assertGarbledMessage(garbledMessage, garbledMessage);
+  }
+
+  private void assertGarbledMessage(String messages, String expectedGarbledMessage) throws Exception {
+    try {
+      parse(messages);
+      Assert.fail("GarbledMessageException was not thrown for message: " + expectedGarbledMessage);
+    } catch (GarbledMessageException e) {
+      Assert.assertEquals(expectedGarbledMessage, new String(e.getMessageData()));
+    }
   }
 
   private Message parse(String message) throws PartialMessageException, GarbledMessageException {

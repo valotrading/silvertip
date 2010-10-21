@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public class AbstractMessageParserTest extends AbstractMessageParser<Message> {
 
-  @Test public void parsingValidData() throws PartialMessageException {
+  @Test public void parsingValidData() throws GarbledMessageException, PartialMessageException {
     byte[] data = "FOO".getBytes();
     AbstractMessageParser<Message> parser = new AbstractMessageParserTest();
     ByteBuffer buffer = ByteBuffer.wrap(Arrays.copyOf(data, data.length));
@@ -19,7 +19,7 @@ public class AbstractMessageParserTest extends AbstractMessageParser<Message> {
     assertArraysEquals(data, result.payload());
   }
 
-  @Test(expected = PartialMessageException.class) public void partialMessage() throws PartialMessageException {
+  @Test(expected = PartialMessageException.class) public void partialMessage() throws GarbledMessageException, PartialMessageException {
     AbstractMessageParser<Message> parser = new AbstractMessageParserTest() {
       @Override protected byte[] onParse(ByteBuffer buffer) throws GarbledMessageException,
           PartialMessageException {
@@ -27,28 +27,6 @@ public class AbstractMessageParserTest extends AbstractMessageParser<Message> {
       }
     };
     parser.parse(ByteBuffer.allocate(0));
-  }
-
-  @Test public void garbledMessage() throws PartialMessageException {
-    final String garbled1 = "FOO";
-    final String garbled2 = "BAR";
-    ByteBuffer buffer = ByteBuffer.wrap((garbled1 + garbled2).getBytes());
-    AbstractMessageParser<Message> parser = new AbstractMessageParserTest() {
-      @Override protected byte[] onParse(ByteBuffer buffer) throws GarbledMessageException,
-          PartialMessageException {
-        for (int i = 0; i < garbled1.length(); i++)
-          buffer.get();
-        throw new GarbledMessageException();
-      }
-    };
-    checkNextMessageData(garbled1+garbled2, buffer, parser);
-  }
-
-  private void checkNextMessageData(String original, ByteBuffer buffer, AbstractMessageParser<Message> parser)
-      throws PartialMessageException {
-    buffer.mark();
-    Message message = parser.parse(buffer);
-    assertArraysEquals(original.getBytes(), message.payload());
   }
 
   @Override protected Message newMessage(byte[] data) {

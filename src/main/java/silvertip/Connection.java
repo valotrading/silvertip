@@ -79,6 +79,8 @@ public class Connection<T> implements EventSource {
       } catch (PartialMessageException e) {
         rxBuffer.reset();
         break;
+      } catch (GarbledMessageException e) {
+        /* Ignore garbled message */
       }
     }
     rxBuffer.compact();

@@ -11,12 +11,20 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
   public static final char DELIMITER = '\001';
 
   @Override protected byte[] onParse(ByteBuffer buffer) throws GarbledMessageException, PartialMessageException {
-    FixMessageHeader header = header(buffer);
-    int trailerLength = trailer(buffer, header);
-    byte[] message = new byte[header.getHeaderLength() + header.getBodyLength() + trailerLength];
-    buffer.reset();
-    buffer.get(message);
-    return message;
+    try {
+      FixMessageHeader header = header(buffer);
+      int trailerLength = trailer(buffer, header);
+      byte[] message = new byte[header.getHeaderLength() + header.getBodyLength() + trailerLength];
+      buffer.reset();
+      buffer.get(message);
+      return message;
+    } catch (GarbledMessageException e) {
+      buffer.reset();
+      byte[] data = new byte[buffer.limit() - buffer.position()];
+      buffer.get(data);
+      e.setMessageData(data);
+      throw e;
+    }
   }
 
   @Override protected Message newMessage(byte[] data) {

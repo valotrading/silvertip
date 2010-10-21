@@ -26,8 +26,10 @@ public interface MessageParser<T> {
    * data.</li>
    * </ul>
    * 
+   * @throws GarbledMessageException
+   *           if <code>buffer</code> has garbled message in it.
    * @throws PartialMessageException
    *           if <code>buffer</code> does not have one full message in it.
    */
-  T parse(ByteBuffer buffer) throws PartialMessageException;
+  T parse(ByteBuffer buffer) throws GarbledMessageException, PartialMessageException;
 }
