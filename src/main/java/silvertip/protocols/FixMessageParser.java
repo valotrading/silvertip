@@ -12,8 +12,7 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
 
   @Override protected byte[] onParse(ByteBuffer buffer) throws GarbledMessageException, PartialMessageException {
     FixMessageHeader header = header(buffer);
-    int start = buffer.position();
-    int trailerStart = start + header.getBodyLength();
+    int trailerStart = header.getBodyStart() + header.getBodyLength();
     if (trailerStart > buffer.limit()) {
       throw new PartialMessageException();
     }
@@ -34,7 +33,7 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
     parseField(buffer, Tag.BEGIN_STRING);
     String bodyLength = parseField(buffer, Tag.BODY_LENGTH);
 
-    return new FixMessageHeader(buffer.position() - start, Integer.parseInt(bodyLength));
+    return new FixMessageHeader(buffer.position() - start, Integer.parseInt(bodyLength), buffer.position());
   }
 
   private int trailer(ByteBuffer buffer) throws GarbledMessageException {
@@ -77,10 +76,12 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
   private static class FixMessageHeader {
     private final int headerLength;
     private final int bodyLength;
+    private final int bodyStart;
 
-    public FixMessageHeader(int headerLength, int bodyLength) {
+    public FixMessageHeader(int headerLength, int bodyLength, int bodyStart) {
       this.headerLength = headerLength;
       this.bodyLength = bodyLength;
+      this.bodyStart = bodyStart;
     }
 
     public int getHeaderLength() {
@@ -89,6 +90,10 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
 
     public int getBodyLength() {
       return bodyLength;
+    }
+
+    public int getBodyStart() {
+      return bodyStart;
     }
   }
 
