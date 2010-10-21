@@ -58,7 +58,7 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
 
   private String parseField(ByteBuffer buffer, Tag tag) throws GarbledMessageException {
     match(buffer, tag);
-    return value(buffer);
+    return value(buffer, tag);
   }
 
   private void match(ByteBuffer buffer, Tag tag) throws GarbledMessageException {
@@ -71,7 +71,7 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
     }
   }
 
-  private String value(ByteBuffer buffer) {
+  private String value(ByteBuffer buffer, Tag tag) throws GarbledMessageException {
     StringBuilder result = new StringBuilder();
     for (;;) {
       byte ch = buffer.get();
@@ -79,6 +79,8 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
         break;
       result.append((char) ch);
     }
+    if (result.length() == 0)
+      throw new GarbledMessageException(tag + " is empty");
     return result.toString();
   }
 
