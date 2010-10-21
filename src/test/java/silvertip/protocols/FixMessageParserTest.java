@@ -73,6 +73,15 @@ public class FixMessageParserTest {
     assertGarbledMessage(message);
   }
 
+  @Test public void emptyCheckSum() throws Exception {
+    String header = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
+    String payload = "35=E" + DELIMITER;
+    String trailer = "10=" + DELIMITER;
+    String message = header + payload + trailer;
+
+    assertGarbledMessage(message);
+  }
+
   @Test(expected = PartialMessageException.class)
   public void partialMessage() throws Exception {
     String header = "8=FIX.4.2" + DELIMITER + "9=153" + DELIMITER + "";
