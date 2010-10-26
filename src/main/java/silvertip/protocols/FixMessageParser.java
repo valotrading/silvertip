@@ -92,9 +92,14 @@ public class FixMessageParser implements MessageParser<Message> {
 
   private void match(ByteBuffer buffer, Tag tag) throws GarbledMessageException {
     String expected = tag.number() + "=";
+    int start = buffer.position();
     for (int i = 0; i < expected.length(); i++) {
       int c = buffer.get();
       if (c != expected.charAt(i)) {
+        /* BeginString(8) is always expected to be the first field of the
+         * message, and thus, is not preceded by a SOH. */
+        if (tag != Tag.BEGIN_STRING)
+          buffer.position(start - 1);
         throw new GarbledMessageException("Expected tag not found: " + tag);
       }
     }

@@ -52,6 +52,12 @@ public class FixMessageParserTest {
     assertGarbledMessage(garbled, "Expected tag not found: BodyLength(9)");
   }
 
+  @Test public void secondFieldIsNotBodyLengthAndIsMissing() throws Exception {
+    String garbled = "8=FIX.4.2" + DELIMITER;
+
+    assertGarbledMessage(garbled, "Expected tag not found: BodyLength(9)");
+  }
+
   @Test public void emptyBodyLength() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "9=" + DELIMITER + "108=XXX" + DELIMITER;
 
@@ -76,6 +82,12 @@ public class FixMessageParserTest {
 
   @Test public void thirdFieldIsNotMsgType() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER + "X=A" + DELIMITER;
+
+    assertGarbledMessage(garbled, "Expected tag not found: MsgType(35)");
+  }
+
+  @Test public void thirdFieldIsNotMsgTypeAndIsMissing() throws Exception {
+    String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
 
     assertGarbledMessage(garbled, "Expected tag not found: MsgType(35)");
   }
