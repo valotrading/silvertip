@@ -137,8 +137,16 @@ public class FixMessageParser implements MessageParser<Message> {
   private boolean skipToBeginString(ByteBuffer buffer) {
     String beginString = DELIMITER + "8=";
     for (int i = 0; i < beginString.length(); i++) {
-      if (buffer.get() != beginString.charAt(i))
+      if (buffer.get() != beginString.charAt(i)) {
+        /* Rewind to the previous position when SOH was found but the
+         * subsequent character does not match with the expected character.
+         * Rewinding to the previous position is needed for making sure that no
+         * part of the character sequence that would otherwise match is
+         * consumed. */
+        if (i > 0)
+          buffer.position(buffer.position() - 1);
         return false;
+      }
     }
     /* Set the buffer position to the beginning of BeginString(8) */
     buffer.position(buffer.position() - beginString.length() + 1);
