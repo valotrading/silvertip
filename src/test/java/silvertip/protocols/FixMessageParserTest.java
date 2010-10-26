@@ -31,37 +31,37 @@ public class FixMessageParserTest {
   @Test public void firstFieldIsNotBeginString() throws Exception {
     String garbled = "X=FIX.4.2" + DELIMITER + "9=5" + DELIMITER;
 
-    assertGarbledMessage(garbled);
+    assertGarbledMessage(garbled, "Expected tag not found: BeginString(8)");
   }
 
   @Test public void emptyBeginString() throws Exception {
     String garbled = "8=" + DELIMITER + "9=5" + DELIMITER;
 
-    assertGarbledMessage(garbled);
+    assertGarbledMessage(garbled, "BeginString(8) is empty");
   }
 
   @Test public void invalidBeginString() throws Exception {
     String garbled = "8=XIF.10.1" + DELIMITER + "9=5" + DELIMITER;
 
-    assertGarbledMessage(garbled);
+    assertGarbledMessage(garbled, "BeginString(8) is invalid, expected format FIX.m.n: XIF.10.1");
   }
 
   @Test public void secondFieldIsNotBodyLength() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "X=5" + DELIMITER;
 
-    assertGarbledMessage(garbled);
+    assertGarbledMessage(garbled, "Expected tag not found: BodyLength(9)");
   }
 
   @Test public void emptyBodyLength() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "9=" + DELIMITER + "108=XXX" + DELIMITER;
 
-    assertGarbledMessage(garbled);
+    assertGarbledMessage(garbled, "BodyLength(9) is empty");
   }
 
   @Test public void invalidBodyLengthFormat() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "9=XXX" + DELIMITER + "108=XXX" + DELIMITER;
 
-    assertGarbledMessage(garbled);
+    assertGarbledMessage(garbled, "BodyLength(9) has invalid format: XXX");
   }
 
   @Test public void bodyLengthDoesNotPointToStandardTrailer() throws Exception {
@@ -71,19 +71,19 @@ public class FixMessageParserTest {
     String messages = header + payload + header + payload + trailer;
     String garbled = header + payload;
 
-    assertGarbledMessage(messages, garbled);
+    assertGarbledMessage(messages, garbled, "Expected tag not found: CheckSum(10)");
   }
 
   @Test public void thirdFieldIsNotMsgType() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER + "X=A" + DELIMITER;
 
-    assertGarbledMessage(garbled);
+    assertGarbledMessage(garbled, "Expected tag not found: MsgType(35)");
   }
 
   @Test public void emptyMsgType() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER + "35=" + DELIMITER + "108=XXX" + DELIMITER;
 
-    assertGarbledMessage(garbled);
+    assertGarbledMessage(garbled, "MsgType(35) is empty");
   }
 
   @Test public void missingCheckSum() throws Exception {
@@ -92,7 +92,7 @@ public class FixMessageParserTest {
     String trailer = "11=XXX" + DELIMITER;
     String message = header + payload + trailer;
 
-    assertGarbledMessage(message);
+    assertGarbledMessage(message, "Expected tag not found: CheckSum(10)");
   }
 
   @Test public void emptyCheckSum() throws Exception {
@@ -101,25 +101,25 @@ public class FixMessageParserTest {
     String trailer = "10=" + DELIMITER;
     String message = header + payload + trailer;
 
-    assertGarbledMessage(message);
+    assertGarbledMessage(message, "CheckSum(10) is empty");
   }
 
   @Test public void invalidCheckSumFormat() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER + "35=E" + DELIMITER + "10=XYZ" + DELIMITER;
 
-    assertGarbledMessage(garbled);
+    assertGarbledMessage(garbled, "CheckSum(10) has invalid format: XYZ");
   }
 
   @Test public void invalidCheckSumLength() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER + "35=E" + DELIMITER + "10=12" + DELIMITER;
 
-    assertGarbledMessage(garbled);
+    assertGarbledMessage(garbled, "CheckSum(10) has invalid length: 12");
   }
 
   @Test public void invalidCheckSum() throws Exception {
     String garbled = "8=FIX.4.2" + DELIMITER + "9=5" + DELIMITER + "35=E" + DELIMITER + "10=123" + DELIMITER;
 
-    assertGarbledMessage(garbled);
+    assertGarbledMessage(garbled, "CheckSum(10) mismatch, expected=182, actual=123");
   }
 
   @Test(expected = PartialMessageException.class)
@@ -143,16 +143,17 @@ public class FixMessageParserTest {
     Assert.assertEquals(header + payload + trailer, message.toString());
   }
 
-  private void assertGarbledMessage(String garbledMessage) throws Exception {
-    assertGarbledMessage(garbledMessage + "8=FIX.4.2", garbledMessage);
+  private void assertGarbledMessage(String garbledMessage, String expectedReason) throws Exception {
+    assertGarbledMessage(garbledMessage + "8=FIX.4.2", garbledMessage, expectedReason);
   }
 
-  private void assertGarbledMessage(String messages, String expectedGarbledMessage) throws Exception {
+  private void assertGarbledMessage(String messages, String expectedGarbledMessage, String expectedReason) throws Exception {
     try {
       parse(messages);
       Assert.fail("GarbledMessageException was not thrown for message: " + expectedGarbledMessage);
     } catch (GarbledMessageException e) {
       Assert.assertEquals(expectedGarbledMessage, new String(e.getMessageData()));
+      Assert.assertEquals(expectedReason, e.getMessage());
     }
   }
 
