@@ -3,15 +3,15 @@ package silvertip.protocols;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
-import silvertip.AbstractMessageParser;
 import silvertip.GarbledMessageException;
 import silvertip.Message;
+import silvertip.MessageParser;
 import silvertip.PartialMessageException;
 
-public class FixMessageParser extends AbstractMessageParser<Message> {
+public class FixMessageParser implements MessageParser<Message> {
   public static final char DELIMITER = '\001';
 
-  @Override protected byte[] onParse(ByteBuffer buffer) throws GarbledMessageException, PartialMessageException {
+  @Override final public Message parse(ByteBuffer buffer) throws GarbledMessageException, PartialMessageException {
     try {
       FixMessageHeader header = header(buffer);
       parseField(buffer, Tag.MSG_TYPE);
@@ -19,7 +19,7 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
       byte[] message = new byte[header.getHeaderLength() + header.getBodyLength() + trailerLength];
       buffer.reset();
       buffer.get(message);
-      return message;
+      return new Message(message);
     } catch (GarbledMessageException e) {
       int nextMessagePosition = nextMessagePosition(buffer);
       buffer.reset();
@@ -27,11 +27,9 @@ public class FixMessageParser extends AbstractMessageParser<Message> {
       buffer.get(data);
       e.setMessageData(data);
       throw e;
+    } catch (BufferUnderflowException e) {
+      throw new PartialMessageException();
     }
-  }
-
-  @Override protected Message newMessage(byte[] data) {
-    return new Message(data);
   }
 
   private FixMessageHeader header(ByteBuffer buffer) throws GarbledMessageException {
