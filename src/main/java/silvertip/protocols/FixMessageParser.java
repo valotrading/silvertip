@@ -4,22 +4,22 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
 import silvertip.GarbledMessageException;
-import silvertip.Message;
+import silvertip.FixMessage;
 import silvertip.MessageParser;
 import silvertip.PartialMessageException;
 
-public class FixMessageParser implements MessageParser<Message> {
+public class FixMessageParser implements MessageParser<FixMessage> {
   public static final char DELIMITER = '\001';
 
-  @Override final public Message parse(ByteBuffer buffer) throws GarbledMessageException, PartialMessageException {
+  @Override final public FixMessage parse(ByteBuffer buffer) throws GarbledMessageException, PartialMessageException {
     try {
       FixMessageHeader header = header(buffer);
-      parseField(buffer, Tag.MSG_TYPE);
+      String msgType = parseField(buffer, Tag.MSG_TYPE);
       int trailerLength = trailer(buffer, header);
       byte[] message = new byte[header.getHeaderLength() + header.getBodyLength() + trailerLength];
       buffer.reset();
       buffer.get(message);
-      return new Message(message);
+      return new FixMessage(message, msgType);
     } catch (GarbledMessageException e) {
       int nextMessagePosition = nextMessagePosition(buffer);
       buffer.reset();
