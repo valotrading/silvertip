@@ -122,7 +122,6 @@ public class Connection<T> implements EventSource {
     } catch (IOException e) {
     }
     selectionKey.attach(null);
-    selectionKey.cancel();
     SocketChannel sc = (SocketChannel) selectionKey.channel();
     try {
       sc.close();
