@@ -104,6 +104,7 @@ public class Connection<T> implements EventSource {
     if (selectionKey == null)
       throw new IllegalStateException("Connection is not registered");
     selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+    selectionKey.selector().wakeup();
   }
 
   @Override public void write(SelectionKey key) throws IOException {
