@@ -7,6 +7,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -22,7 +23,7 @@ public class Connection<T> implements EventSource {
     void garbledMessage(String message, byte[] data);
   }
 
-  private List<ByteBuffer> txBuffers = Collections.synchronizedList(new ArrayList<ByteBuffer>());
+  private List<ByteBuffer> txBuffers = Collections.synchronizedList(new LinkedList<ByteBuffer>());
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
   private SelectionKey selectionKey;
   private SocketChannel channel;
@@ -131,12 +132,12 @@ public class Connection<T> implements EventSource {
   }
 
   private void flush() throws IOException {
-    Iterator<ByteBuffer> it = txBuffers.iterator();
-    while (it.hasNext()) {
-      ByteBuffer txBuffer = it.next();
-      if (!write(txBuffer))
+    while (!txBuffers.isEmpty()) {
+      ByteBuffer txBuffer = txBuffers.get(0);
+      if (!write(txBuffer)) {
         break;
-      it.remove();
+      }
+      txBuffers.remove(0);
     }
   }
 
