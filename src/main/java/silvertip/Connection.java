@@ -2,14 +2,15 @@ package silvertip;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Connection<T> implements EventSource {
@@ -121,12 +122,19 @@ public class Connection<T> implements EventSource {
         flush();
     } catch (IOException e) {
     }
-    selectionKey.attach(null);
     SocketChannel sc = (SocketChannel) selectionKey.channel();
     try {
+      Socket socket = sc.socket();
+      if (socket != null) {
+        socket.shutdownInput();
+        socket.shutdownOutput();
+        socket.close();
+      }
       sc.close();
     } catch (IOException e) {
     }
+    selectionKey.attach(null);
+    selectionKey.cancel();
     selectionKey.selector().wakeup();
   }
 
