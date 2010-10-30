@@ -79,6 +79,8 @@ public class Events {
       int numKeys = selector.select(timeout);
       long end = System.nanoTime();
 
+      unregisterClosed();
+
       if (selector.keys().isEmpty())
         break;
 
@@ -94,15 +96,21 @@ public class Events {
     }
   }
 
-  private void timeout() {
+  private void unregisterClosed() {
     Iterator<EventSource> it = sources.iterator();
     while (it.hasNext()) {
       EventSource source = it.next();
       if (source.isClosed()) {
         source.unregister();
         it.remove();
-        continue;
       }
+    }
+  }
+
+  private void timeout() {
+    Iterator<EventSource> it = sources.iterator();
+    while (it.hasNext()) {
+      EventSource source = it.next();
       source.timeout();
     }
   }
