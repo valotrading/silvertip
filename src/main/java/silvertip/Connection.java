@@ -124,13 +124,22 @@ public class Connection<T> implements EventSource {
     } catch (IOException e) {
     }
     SocketChannel sc = (SocketChannel) selectionKey.channel();
-    try {
-      Socket socket = sc.socket();
-      if (socket != null) {
+    Socket socket = sc.socket();
+    if (socket != null) {
+      try {
         socket.shutdownInput();
-        socket.shutdownOutput();
-        socket.close();
+      } catch (IOException e) {
       }
+      try {
+        socket.shutdownOutput();
+      } catch (IOException e) {
+      }
+      try {
+        socket.close();
+      } catch (IOException e) {
+      }
+    }
+    try {
       sc.close();
     } catch (IOException e) {
     }
