@@ -96,6 +96,10 @@ public class Events {
     }
   }
 
+  public boolean isStopped() {
+    return stopped;
+  }
+
   private void unregisterClosed() {
     Iterator<EventSource> it = sources.iterator();
     while (it.hasNext()) {
