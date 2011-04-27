@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -151,7 +152,7 @@ public class ConnectionTest {
 
   private void sendMessage(final String message, Connection.Callback<Message> callback, MessageParser<Message> parser)
       throws InterruptedException, IOException {
-    final int port = 4444;
+    final int port = new Random(System.currentTimeMillis()).nextInt(1024) + 1024;
     StubServer server = new StubServer(port, message);
     Thread serverThread = new Thread(server);
     serverThread.start();

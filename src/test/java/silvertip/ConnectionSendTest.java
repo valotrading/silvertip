@@ -22,7 +22,7 @@ public class ConnectionSendTest {
    * makes sure the received data is not corrupted.
    */
   @Test public void testPartialWrite() throws Exception {
-    final int port = 4444;
+    final int port = new Random(System.currentTimeMillis()).nextInt(1024) + 1024;
     final StubServer server = new StubServer(port);
     Thread serverThread = new Thread(server);
     serverThread.start();
