@@ -1,5 +1,6 @@
 package silvertip;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Pipe;
@@ -12,6 +13,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
 import jline.ConsoleReader;
+import jline.History;
 
 public class CommandLine implements EventSource {
   private static final String PROMPT = "> ";
@@ -25,11 +27,11 @@ public class CommandLine implements EventSource {
   private SelectionKey selectionKey;
   private final Callback callback;
   private SystemInPipe stdinPipe;
+  private static ConsoleReader reader;
 
   public static CommandLine open(Callback callback) throws IOException {
+    reader = new ConsoleReader();
     return open(new Console() {
-      private final ConsoleReader reader = new ConsoleReader();
-
       @Override public void println(String string) throws IOException {
         reader.putString(string);
       }
@@ -100,6 +102,10 @@ public class CommandLine implements EventSource {
 
   @Override public boolean isClosed() {
     return false;
+  }
+
+  public void setHistory(File historyFile) throws IOException {
+    reader.setHistory(new History(historyFile));
   }
 
   private static class SystemInPipe {
