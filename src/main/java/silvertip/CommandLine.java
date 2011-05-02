@@ -12,6 +12,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
+import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
 
@@ -106,6 +107,10 @@ public class CommandLine implements EventSource {
 
   public void setHistory(File historyFile) throws IOException {
     reader.setHistory(new History(historyFile));
+  }
+
+  public void addCompletor(Completor completor) {
+    reader.addCompletor(completor);
   }
 
   private static class SystemInPipe {
