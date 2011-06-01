@@ -15,6 +15,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ConnectionSendTest {
+  private static final int IDLE_MSEC = 50;
   /*
    * The purpose of this test case is to send as much data as possible so that
    * we'll trigger a partial write condition (i.e. channel.write() is unable to
@@ -36,7 +37,7 @@ public class ConnectionSendTest {
     };
     final Callback callback = new Callback();
     final Events events = Events.open(100);
-    final Connection<Message> connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
+    Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), parser, callback);
     events.register(connection);
     events.dispatch();
     server.awaitForStop();
@@ -109,27 +110,37 @@ public class ConnectionSendTest {
 
     @Override
     public void run() {
-      ServerSocket serverSocket = null;
-      try {
-        serverSocket = new ServerSocket(port);
-        serverStarted.countDown();
-        Socket clientSocket = serverSocket.accept();
-        int count = 0;
-        for (;;) {
-          int ch = clientSocket.getInputStream().read();
-          if (ch == -1)
-            break;
-          Assert.assertEquals(count++ % 256, ch);
-          total++;
+      final MessageParser<Integer> parser = new MessageParser<Integer>() {
+        @Override
+        public Integer parse(ByteBuffer buffer) throws PartialMessageException {
+          return UnsignedBytes.toInt(buffer.get());
         }
-      } catch (IOException e) {
-        /* EOF */
-      } finally {
-        if (serverSocket != null) {
-          try {
-            serverSocket.close();
-          } catch (IOException ex) {
+      };
+      Connection.Callback<Integer> callback = new Connection.Callback<Integer>() {
+        int count = 0;
+        @Override public void messages(Connection<Integer> connection, Iterator<Integer> messages) {
+          while (messages.hasNext()) {
+            int ch = messages.next();
+            Assert.assertEquals(count++ % 256, ch);
+            total++;
           }
+        }
+        @Override public void idle(Connection<Integer> connection) {}
+        @Override public void closed(Connection<Integer> connection) {}
+        @Override public void garbledMessage(String garbledMessage, byte[] data) {}
+      };
+      Connection<Integer> connection = null;
+      try {
+        serverStarted.countDown();
+        connection = Connection.accept(new InetSocketAddress(port), parser, callback);
+        Events events = Events.open(IDLE_MSEC);
+        events.register(connection);
+        events.dispatch();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      } finally {
+        if (connection != null) {
+          connection.close();
         }
         serverStopped.countDown();
       }

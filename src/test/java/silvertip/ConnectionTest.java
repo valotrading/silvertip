@@ -158,8 +158,8 @@ public class ConnectionTest {
     serverThread.start();
     server.awaitForStart();
     try {
-      final Connection<Message> connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
-      Events events = new Events(selector, IDLE_MSEC);
+      final Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), parser, callback);
+      Events events = Events.open(IDLE_MSEC);
       events.register(connection);
       events.dispatch();
     } finally {
@@ -194,25 +194,33 @@ public class ConnectionTest {
 
     @Override
     public void run() {
-      ServerSocket serverSocket = null;
+      Connection.Callback<String> callback = new Connection.Callback<String>() {
+        @Override public void messages(Connection<String> connection, Iterator<String> messages) {}
+        @Override public void idle(Connection<String> connection) {}
+        @Override public void closed(Connection<String> connection) {}
+        @Override public void garbledMessage(String garbledMessage, byte[] data) {}
+      };
+      Connection<String> connection = null;
       try {
-        serverSocket = new ServerSocket(port);
         serverStarted.countDown();
-        Socket clientSocket = serverSocket.accept();
-        clientSocket.getOutputStream().write(message.getBytes());
-        clientSocket.getOutputStream().flush();
+        connection = Connection.accept(new InetSocketAddress(port), null, callback);
+        sendMessage(connection);
         clientStopped.await();
       } catch (Exception e) {
         throw new RuntimeException(e);
       } finally {
-        if (serverSocket != null) {
-          try {
-            serverSocket.close();
-          } catch (IOException ex) {
-          }
+        if (connection != null) {
+          connection.close();
         }
         serverStopped.countDown();
       }
+    }
+
+    private void sendMessage(Connection connection) throws IOException {
+      Events events = Events.open(IDLE_MSEC);
+      events.register(connection);
+      connection.send(message.getBytes());
+      events.dispatch();
     }
   }
 }
