@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>silvertip</groupId>
     <artifactId>silvertip</artifactId>
-    <version>0.1.9</version>
+    <version>0.2.0</version>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
