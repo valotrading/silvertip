@@ -125,12 +125,14 @@ public class Events {
     while (it.hasNext()) {
       SelectionKey key = it.next();
       EventSource source = (EventSource) key.attachment();
-      if (key.isAcceptable())
-        newSources.add(source.accept(key));
-      if (key.isReadable())
-        source.read(key);
-      else if (key.isWritable())
-        source.write(key);
+      if (key.isValid()) {
+        if (key.isAcceptable())
+          newSources.add(source.accept(key));
+        if (key.isReadable())
+          source.read(key);
+        else if (key.isWritable())
+          source.write(key);
+      }
       it.remove();
     }
     for (EventSource source : newSources)
