@@ -178,12 +178,14 @@ public class Connection<T> implements EventSource {
   }
 
   private void flush() throws IOException {
-    while (!txBuffers.isEmpty()) {
-      ByteBuffer txBuffer = txBuffers.get(0);
-      if (!write(txBuffer)) {
-        break;
+    synchronized(txBuffers) {
+      while (!txBuffers.isEmpty()) {
+        ByteBuffer txBuffer = txBuffers.get(0);
+        if (!write(txBuffer)) {
+          break;
+        }
+        txBuffers.remove(0);
       }
-      txBuffers.remove(0);
     }
   }
 
