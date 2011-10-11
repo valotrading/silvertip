@@ -30,4 +30,4 @@ If you're using sbt, amend your 'build.sbt' with:
 
   resolvers += "typesafe-releases" at "http://repo.typesafe.com/typesafe/releases"
 
-  libraryDependencies += "silvertip" %% "silvertip" % "0.2.1"
+  libraryDependencies += "silvertip" % "silvertip" % "0.2.1"
