@@ -7,7 +7,7 @@ either hard to use, discontinued, or part of a bigger application framework
 that offer an API for using different transports.
 
 Installation
-============
+------------
 
 Silvertip is made available through Typesafe's maven repository. If you're
 using Apache Ivy, update the resolver chain in your 'ivysettings.xml':
