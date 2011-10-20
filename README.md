@@ -12,22 +12,22 @@ Installation
 Silvertip is made available through Typesafe's maven repository. If you're
 using Apache Ivy, update the resolver chain in your 'ivysettings.xml':
 
-  <resolvers>
-    <chain name="main">
-      <ibiblio name="typesafe-releases"
-        root="http://repo.typesafe.com/typesafe/releases/"
-        m2compatible="true"/>
-    </chain>
-  </resolvers>
+    <resolvers>
+      <chain name="main">
+        <ibiblio name="typesafe-releases"
+          root="http://repo.typesafe.com/typesafe/releases/"
+          m2compatible="true"/>
+      </chain>
+    </resolvers>
 
 and declare a dependency to Silvertip by updating 'ivy.xml':
 
-  <dependencies>
-    <dependency org="silvertip" name="silvertip" rev="0.2.1"/>
-  </dependencies>
+    <dependencies>
+      <dependency org="silvertip" name="silvertip" rev="0.2.1"/>
+    </dependencies>
 
 If you're using sbt, amend your 'build.sbt' with:
 
-  resolvers += "typesafe-releases" at "http://repo.typesafe.com/typesafe/releases"
+    resolvers += "typesafe-releases" at "http://repo.typesafe.com/typesafe/releases"
 
-  libraryDependencies += "silvertip" % "silvertip" % "0.2.1"
+    libraryDependencies += "silvertip" % "silvertip" % "0.2.1"
