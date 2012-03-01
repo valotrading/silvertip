@@ -133,7 +133,7 @@ public class ConnectionTest {
 
       @Override public void idle(Connection<Message> connection) {
         long now = System.nanoTime();
-        Assert.assertTrue("suprious timeout", TimeUnit.NANOSECONDS.toMillis(now - before) >= IDLE_MSEC);
+        Assert.assertTrue("spurious timeout", TimeUnit.NANOSECONDS.toMillis(now - before) >= IDLE_MSEC);
         if (count++ == 5)
           connection.close();
         before = now;
