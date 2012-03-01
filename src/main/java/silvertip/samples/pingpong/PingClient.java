@@ -8,8 +8,7 @@ import silvertip.Connection;
 import silvertip.Events;
 
 public class PingClient implements Runnable {
-  @Override
-  public void run() {
+  @Override public void run() {
     String hostname = "localhost";
     int port = 4444;
 

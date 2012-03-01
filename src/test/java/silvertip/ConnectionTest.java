@@ -28,13 +28,11 @@ public class ConnectionTest {
   public void garbledMessage() throws Exception {
     final String message = "The quick brown fox jumps over the lazy dog";
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
-      @Override
-      public void messages(Connection<Message> connection, Iterator<Message> messages) {
+      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.fail();
       }
 
-      @Override
-      public void idle(Connection<Message> connection) {
+      @Override public void idle(Connection<Message> connection) {
         connection.close();
       }
 
@@ -59,13 +57,11 @@ public class ConnectionTest {
   public void partialMessage() throws Exception {
     final String message = "The quick brown fox...";
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
-      @Override
-      public void messages(Connection<Message> connection, Iterator<Message> messages) {
+      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.fail("partial message detected");
       }
 
-      @Override
-      public void idle(Connection<Message> connection) {
+      @Override public void idle(Connection<Message> connection) {
         connection.close();
       }
 
@@ -77,8 +73,7 @@ public class ConnectionTest {
       }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
-      @Override
-      public Message parse(ByteBuffer buffer) throws PartialMessageException {
+      @Override public Message parse(ByteBuffer buffer) throws PartialMessageException {
         throw new PartialMessageException();
       }
     };
@@ -89,8 +84,7 @@ public class ConnectionTest {
   public void multipleMessages() throws Exception {
     final String message = "ABC";
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
-      @Override
-      public void messages(Connection<Message> connection, Iterator<Message> messages) {
+      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.assertEquals("A", messages.next().toString());
         Assert.assertEquals("B", messages.next().toString());
         Assert.assertEquals("C", messages.next().toString());
@@ -98,8 +92,7 @@ public class ConnectionTest {
         connection.close();
       }
 
-      @Override
-      public void idle(Connection<Message> connection) {
+      @Override public void idle(Connection<Message> connection) {
         Assert.fail("idle detected");
       }
 
@@ -111,8 +104,7 @@ public class ConnectionTest {
       }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
-      @Override
-      public Message parse(ByteBuffer buffer) throws PartialMessageException {
+      @Override public Message parse(ByteBuffer buffer) throws PartialMessageException {
         byte[] message = new byte[1];
         buffer.get(message);
         return new Message(message);
@@ -127,8 +119,7 @@ public class ConnectionTest {
       long before = System.nanoTime();
       int count;
 
-      @Override
-      public void messages(Connection<Message> connection, Iterator<Message> messages) {
+      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.fail();
       }
 
@@ -242,8 +233,7 @@ public class ConnectionTest {
       serverStopped.await();
     }
 
-    @Override
-    public void run() {
+    @Override public void run() {
       Connection.Callback<String> callback = new Connection.Callback<String>() {
         @Override public void messages(Connection<String> connection, Iterator<String> messages) {}
         @Override public void idle(Connection<String> connection) {}
