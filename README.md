@@ -9,8 +9,8 @@ that offer an API for using different transports.
 Installation
 ------------
 
-Silvertip is made available through Typesafe's maven repository. If you're
-using Apache Ivy, update the resolver chain in your 'ivysettings.xml':
+Silvertip is made available through Typesafe's Maven repository. If you're
+using Apache Ivy, update the resolver chain in your `ivysettings.xml`:
 
     <resolvers>
       <chain name="main">
@@ -20,13 +20,13 @@ using Apache Ivy, update the resolver chain in your 'ivysettings.xml':
       </chain>
     </resolvers>
 
-and declare a dependency to Silvertip by updating 'ivy.xml':
+and declare a dependency to Silvertip by updating `ivy.xml`:
 
     <dependencies>
       <dependency org="silvertip" name="silvertip" rev="0.2.1"/>
     </dependencies>
 
-If you're using sbt, amend your 'build.sbt' with:
+If you're using SBT, amend your `build.sbt` with:
 
     resolvers += "typesafe-releases" at "http://repo.typesafe.com/typesafe/releases"
 

@@ -39,8 +39,7 @@ public class ConsoleClient {
           }
         });
     final CommandLine commandLine = CommandLine.open(new CommandLine.Callback() {
-      @Override
-      public void commandLine(String commandLine) {
+      @Override public void commandLine(String commandLine) {
         connection.send((commandLine + "\n").getBytes());
       }
     });

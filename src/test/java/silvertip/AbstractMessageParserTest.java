@@ -9,7 +9,8 @@ import org.junit.Test;
 
 public class AbstractMessageParserTest extends AbstractMessageParser<Message> {
 
-  @Test public void parsingValidData() throws GarbledMessageException, PartialMessageException {
+  @Test
+  public void parsingValidData() throws GarbledMessageException, PartialMessageException {
     byte[] data = "FOO".getBytes();
     AbstractMessageParser<Message> parser = new AbstractMessageParserTest();
     ByteBuffer buffer = ByteBuffer.wrap(Arrays.copyOf(data, data.length));
@@ -19,7 +20,8 @@ public class AbstractMessageParserTest extends AbstractMessageParser<Message> {
     assertArraysEquals(data, result.payload());
   }
 
-  @Test(expected = PartialMessageException.class) public void partialMessage() throws GarbledMessageException, PartialMessageException {
+  @Test(expected = PartialMessageException.class)
+  public void partialMessage() throws GarbledMessageException, PartialMessageException {
     AbstractMessageParser<Message> parser = new AbstractMessageParserTest() {
       @Override protected byte[] onParse(ByteBuffer buffer) throws GarbledMessageException,
           PartialMessageException {
