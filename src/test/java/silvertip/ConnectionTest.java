@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.Assert;
 
@@ -27,13 +28,11 @@ public class ConnectionTest {
   public void garbledMessage() throws Exception {
     final String message = "The quick brown fox jumps over the lazy dog";
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
-      @Override
-      public void messages(Connection<Message> connection, Iterator<Message> messages) {
+      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.fail();
       }
 
-      @Override
-      public void idle(Connection<Message> connection) {
+      @Override public void idle(Connection<Message> connection) {
         connection.close();
       }
 
@@ -58,13 +57,11 @@ public class ConnectionTest {
   public void partialMessage() throws Exception {
     final String message = "The quick brown fox...";
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
-      @Override
-      public void messages(Connection<Message> connection, Iterator<Message> messages) {
+      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.fail("partial message detected");
       }
 
-      @Override
-      public void idle(Connection<Message> connection) {
+      @Override public void idle(Connection<Message> connection) {
         connection.close();
       }
 
@@ -76,8 +73,7 @@ public class ConnectionTest {
       }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
-      @Override
-      public Message parse(ByteBuffer buffer) throws PartialMessageException {
+      @Override public Message parse(ByteBuffer buffer) throws PartialMessageException {
         throw new PartialMessageException();
       }
     };
@@ -88,8 +84,7 @@ public class ConnectionTest {
   public void multipleMessages() throws Exception {
     final String message = "ABC";
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
-      @Override
-      public void messages(Connection<Message> connection, Iterator<Message> messages) {
+      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.assertEquals("A", messages.next().toString());
         Assert.assertEquals("B", messages.next().toString());
         Assert.assertEquals("C", messages.next().toString());
@@ -97,8 +92,7 @@ public class ConnectionTest {
         connection.close();
       }
 
-      @Override
-      public void idle(Connection<Message> connection) {
+      @Override public void idle(Connection<Message> connection) {
         Assert.fail("idle detected");
       }
 
@@ -110,8 +104,7 @@ public class ConnectionTest {
       }
     };
     MessageParser<Message> parser = new MessageParser<Message>() {
-      @Override
-      public Message parse(ByteBuffer buffer) throws PartialMessageException {
+      @Override public Message parse(ByteBuffer buffer) throws PartialMessageException {
         byte[] message = new byte[1];
         buffer.get(message);
         return new Message(message);
@@ -126,14 +119,13 @@ public class ConnectionTest {
       long before = System.nanoTime();
       int count;
 
-      @Override
-      public void messages(Connection<Message> connection, Iterator<Message> messages) {
+      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.fail();
       }
 
       @Override public void idle(Connection<Message> connection) {
         long now = System.nanoTime();
-        Assert.assertTrue("suprious timeout", TimeUnit.NANOSECONDS.toMillis(now - before) >= IDLE_MSEC);
+        Assert.assertTrue("spurious timeout", TimeUnit.NANOSECONDS.toMillis(now - before) >= IDLE_MSEC);
         if (count++ == 5)
           connection.close();
         before = now;
@@ -150,9 +142,48 @@ public class ConnectionTest {
     sendMessage("", callback, null);
   }
 
+  @Test
+  public void closed() throws Exception {
+    final AtomicBoolean connectionClosed = new AtomicBoolean(false);
+    final int port = getRandomPort();
+    final StubServer server = new StubServer(port, "", false);
+
+    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
+      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
+        Assert.fail();
+      }
+
+      @Override public void idle(Connection<Message> connection) {
+        server.notifyClientStopped();
+      }
+
+      @Override public void closed(Connection<Message> connection) {
+        connectionClosed.set(true);
+      }
+
+      @Override public void garbledMessage(String message, byte[] data) {
+        Assert.fail();
+      }
+    };
+
+    Thread serverThread = new Thread(server);
+    serverThread.start();
+    server.awaitForStart();
+    try {
+      final Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), null, callback);
+      Events events = Events.open(IDLE_MSEC);
+      events.register(connection);
+      events.dispatch();
+    } finally {
+      server.awaitForStop();
+    }
+
+    Assert.assertTrue("callback not called", connectionClosed.get());
+  }
+
   private void sendMessage(final String message, Connection.Callback<Message> callback, MessageParser<Message> parser)
       throws InterruptedException, IOException {
-    final int port = new Random(System.currentTimeMillis()).nextInt(1024) + 1024;
+    final int port = getRandomPort();
     StubServer server = new StubServer(port, message);
     Thread serverThread = new Thread(server);
     serverThread.start();
@@ -168,16 +199,26 @@ public class ConnectionTest {
     }
   }
 
+  private int getRandomPort() {
+    return new Random(System.currentTimeMillis()).nextInt(1024) + 1024;
+  }
+
   private final class StubServer implements Runnable {
     private final CountDownLatch serverStopped = new CountDownLatch(1);
     private final CountDownLatch serverStarted = new CountDownLatch(1);
     private final CountDownLatch clientStopped = new CountDownLatch(1);
     private final String message;
     private final int port;
+    private final boolean linger;
 
     private StubServer(int port, String message) {
+      this(port, message, true);
+    }
+
+    private StubServer(int port, String message, boolean linger) {
       this.message = message;
       this.port = port;
+      this.linger = linger;
     }
 
     public void awaitForStart() throws InterruptedException {
@@ -192,8 +233,7 @@ public class ConnectionTest {
       serverStopped.await();
     }
 
-    @Override
-    public void run() {
+    @Override public void run() {
       Connection.Callback<String> callback = new Connection.Callback<String>() {
         @Override public void messages(Connection<String> connection, Iterator<String> messages) {}
         @Override public void idle(Connection<String> connection) {}
@@ -220,7 +260,11 @@ public class ConnectionTest {
       Events events = Events.open(IDLE_MSEC);
       events.register(connection);
       connection.send(message.getBytes());
-      events.dispatch();
+      if (linger) {
+        events.dispatch();
+      } else {
+        events.stop();
+      }
     }
   }
 }

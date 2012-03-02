@@ -22,15 +22,15 @@ public class ConnectionSendTest {
    * consume the whole byte buffer). The server side of this test case then
    * makes sure the received data is not corrupted.
    */
-  @Test public void testPartialWrite() throws Exception {
+  @Test
+  public void testPartialWrite() throws Exception {
     final int port = new Random(System.currentTimeMillis()).nextInt(1024) + 1024;
     final StubServer server = new StubServer(port);
     Thread serverThread = new Thread(server);
     serverThread.start();
     server.awaitForStart();
     final MessageParser<Message> parser = new MessageParser<Message>() {
-      @Override
-      public Message parse(ByteBuffer buffer) throws PartialMessageException {
+      @Override public Message parse(ByteBuffer buffer) throws PartialMessageException {
         Assert.fail();
         return null;
       }
@@ -50,8 +50,7 @@ public class ConnectionSendTest {
     private int start;
     private int total;
 
-    @Override
-    public void idle(Connection<Message> connection) {
+    @Override public void idle(Connection<Message> connection) {
       Random generator = new Random();
       List<Message> messages = new ArrayList<Message>();
       for (int i = 0; i < 100; i++) {
@@ -78,8 +77,7 @@ public class ConnectionSendTest {
       return new Message(m);
     }
 
-    @Override
-    public void messages(Connection<Message> connection, Iterator<Message> messages) {
+    @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
       Assert.fail();
     }
 
@@ -108,11 +106,9 @@ public class ConnectionSendTest {
       serverStopped.await();
     }
 
-    @Override
-    public void run() {
+    @Override public void run() {
       final MessageParser<Integer> parser = new MessageParser<Integer>() {
-        @Override
-        public Integer parse(ByteBuffer buffer) throws PartialMessageException {
+        @Override public Integer parse(ByteBuffer buffer) throws PartialMessageException {
           return UnsignedBytes.toInt(buffer.get());
         }
       };
