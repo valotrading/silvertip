@@ -64,6 +64,7 @@ public class Connection<T> implements EventSource {
     ServerSocket socket = serverChannel.socket();
     socket.bind(address);
     SocketChannel channel = serverChannel.accept();
+    serverChannel.close();
     channel.configureBlocking(false);
     return new Connection<T>(channel, parser, callback);
   }
