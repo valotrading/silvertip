@@ -23,11 +23,11 @@ using Apache Ivy, update the resolver chain in your `ivysettings.xml`:
 and declare a dependency to Silvertip by updating `ivy.xml`:
 
     <dependencies>
-      <dependency org="silvertip" name="silvertip" rev="0.2.1"/>
+      <dependency org="silvertip" name="silvertip" rev="0.2.2"/>
     </dependencies>
 
 If you're using SBT, amend your `build.sbt` with:
 
     resolvers += "typesafe-releases" at "http://repo.typesafe.com/typesafe/releases"
 
-    libraryDependencies += "silvertip" % "silvertip" % "0.2.1"
+    libraryDependencies += "silvertip" % "silvertip" % "0.2.2"
