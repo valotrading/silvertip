@@ -1,1 +1,1 @@
-- FIX message payload encoding is not handled at all which might corrupt data.
+- message payload encoding is not handled at all
