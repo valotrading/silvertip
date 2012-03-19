@@ -64,6 +64,9 @@ public class Events {
   public Events(Selector selector, long idleMsec) {
     this.selector = selector;
     this.idleMsec = idleMsec;
+
+    if (idleMsec <= 0)
+      throw new IllegalArgumentException("idleMsec must be positive");
   }
 
   public void register(EventSource source) throws IOException {
