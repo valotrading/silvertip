@@ -27,6 +27,10 @@ public class Server implements EventSource {
     this.factory = factory;
   }
 
+  public void close() throws IOException {
+    serverChannel.close();
+  }
+
   @Override public SelectionKey register(Selector selector, int ops) throws IOException {
     return serverChannel.register(selector, SelectionKey.OP_ACCEPT);
   }
