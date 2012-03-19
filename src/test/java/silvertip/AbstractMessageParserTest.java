@@ -3,8 +3,7 @@ package silvertip;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 public class AbstractMessageParserTest extends AbstractMessageParser<Message> {

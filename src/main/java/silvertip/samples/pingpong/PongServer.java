@@ -69,6 +69,7 @@ public class PongServer implements Runnable {
       events.register(server);
       done.countDown();
       events.dispatch();
+      server.close();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
