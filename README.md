@@ -15,7 +15,7 @@ Ivy, update the resolver chain in your `ivysettings.xml`:
     <resolvers>
       <chain name="main">
         <ibiblio name="silvertip-repository"
-          root="http://penberg.github.com/silvertip/maven"
+          root="http://valotrading.github.com/silvertip/maven"
           m2compatible="true"/>
       </chain>
     </resolvers>
@@ -28,6 +28,6 @@ and declare a dependency to Silvertip by updating `ivy.xml`:
 
 If you're using SBT, amend your `build.sbt` with:
 
-    resolvers += "silvertip-repository" at "http://penberg.github.com/silvertip/maven"
+    resolvers += "silvertip-repository" at "http://valotrading.github.com/silvertip/maven"
 
     libraryDependencies += "silvertip" % "silvertip" % "0.2.3"
