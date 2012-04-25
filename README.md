@@ -31,3 +31,21 @@ If you're using SBT, amend your `build.sbt` with:
     resolvers += "silvertip-repository" at "http://valotrading.github.com/silvertip/maven"
 
     libraryDependencies += "silvertip" % "silvertip" % "0.2.4"
+
+Releasing
+---------
+
+To release a version, make a clone of `gh-pages` branch:
+
+    git clone git@github.com:valotrading/silvertip.git $HOME/silvertip-gh-pages -b gh-pages
+
+Then deploy:
+
+    mvn deploy -DaltDeploymentRepository=mine::default::file://$HOME/silvertip-gh-pages/maven
+
+And finally:
+ 
+    cd $HOME/silvertip-gh-pages
+    git add .
+    git commit -a -s
+    git push origin gh-pages
