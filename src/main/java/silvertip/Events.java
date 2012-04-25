@@ -73,8 +73,15 @@ public class Events {
   }
 
   public void dispatch() throws IOException {
+    while (!isStopped()) {
+      if (!process())
+        break;
+    }
+  }
+
+  public boolean process() throws IOException {
     long timeout = idleMsec;
-    while (!stopped) {
+    while (timeout > 0) {
       long start = System.nanoTime();
       int numKeys = selector.select(timeout);
       long end = System.nanoTime();
@@ -82,18 +89,20 @@ public class Events {
       unregisterClosed();
 
       if (selector.keys().isEmpty())
-        break;
+        return false;
 
-      if (numKeys == 0) {
-        timeout -= TimeUnit.NANOSECONDS.toMillis(end - start);
-        if (timeout > 0)
-          continue;
-        timeout();
-      } else {
+      if (numKeys > 0) {
         dispatchMessages();
+        break;
       }
-      timeout = idleMsec;
+
+      timeout -= TimeUnit.NANOSECONDS.toMillis(end - start);
+      if (timeout <= 0) {
+        timeout();
+        break;
+      }
     }
+    return true;
   }
 
   public boolean isStopped() {
