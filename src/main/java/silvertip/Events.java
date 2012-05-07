@@ -105,6 +105,20 @@ public class Events {
     return true;
   }
 
+  public boolean processNow() throws IOException {
+    int numKeys = selector.selectNow();
+
+    unregisterClosed();
+
+    if (selector.keys().isEmpty())
+      return false;
+
+    if (numKeys > 0)
+      dispatchMessages();
+
+    return true;
+  }
+
   public boolean isStopped() {
     return stopped;
   }
