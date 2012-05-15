@@ -5,7 +5,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.channels.Selector;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -17,8 +16,6 @@ import org.junit.Test;
 
 public class ConnectionTest {
   private static final int IDLE_MSEC = 50;
-
-  private final Selector selector = Selector.open();
 
   public ConnectionTest() throws IOException {
   }
@@ -128,7 +125,6 @@ public class ConnectionTest {
         if (count++ == 5)
           connection.close();
         before = now;
-        selector.wakeup();
       }
 
       @Override public void closed(Connection<Message> connection) {
