@@ -166,9 +166,9 @@ public class ConnectionTest {
     server.awaitForStart();
     try {
       final Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), null, callback);
-      Events events = Events.open(IDLE_MSEC);
+      Events events = Events.open();
       events.register(connection);
-      events.dispatch();
+      events.dispatch(IDLE_MSEC);
     } finally {
       server.awaitForStop();
     }
@@ -185,9 +185,9 @@ public class ConnectionTest {
     server.awaitForStart();
     try {
       final Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), parser, callback);
-      Events events = Events.open(IDLE_MSEC);
+      Events events = Events.open();
       events.register(connection);
-      events.dispatch();
+      events.dispatch(IDLE_MSEC);
     } finally {
       server.notifyClientStopped();
       server.awaitForStop();
@@ -252,11 +252,11 @@ public class ConnectionTest {
     }
 
     private void sendMessage(Connection connection) throws IOException {
-      Events events = Events.open(IDLE_MSEC);
+      Events events = Events.open();
       events.register(connection);
       connection.send(message.getBytes());
       if (linger) {
-        events.dispatch();
+        events.dispatch(IDLE_MSEC);
       } else {
         events.stop();
       }

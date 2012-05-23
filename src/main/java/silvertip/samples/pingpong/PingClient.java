@@ -34,10 +34,10 @@ public class PingClient implements Runnable {
             @Override public void garbledMessage(String message, byte[] data) {
             }
           });
-      Events events = Events.open(100);
+      Events events = Events.open();
       events.register(connection);
       connection.send("HELO\n".getBytes());
-      events.dispatch();
+      events.dispatch(100);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
