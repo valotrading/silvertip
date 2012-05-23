@@ -36,10 +36,10 @@ public class ConnectionSendTest {
       }
     };
     final Callback callback = new Callback();
-    final Events events = Events.open(100);
+    final Events events = Events.open();
     Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), parser, callback);
     events.register(connection);
-    events.dispatch();
+    events.dispatch(100);
     server.awaitForStop();
     events.stop();
     Assert.assertEquals(callback.total, server.total);
@@ -129,9 +129,9 @@ public class ConnectionSendTest {
       try {
         serverStarted.countDown();
         connection = Connection.accept(new InetSocketAddress(port), parser, callback);
-        Events events = Events.open(IDLE_MSEC);
+        Events events = Events.open();
         events.register(connection);
-        events.dispatch();
+        events.dispatch(IDLE_MSEC);
       } catch (IOException e) {
         throw new RuntimeException(e);
       } finally {

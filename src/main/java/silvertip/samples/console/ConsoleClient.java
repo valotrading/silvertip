@@ -14,7 +14,7 @@ public class ConsoleClient {
     String hostname = "localhost";
     int port = 4444;
 
-    final Events events = Events.open(30 * 1000);
+    final Events events = Events.open();
 
     final Connection<String> connection = Connection.connect(new InetSocketAddress(hostname, port),
         new PingPongMessageParser(), new Connection.Callback<String>() {
@@ -46,6 +46,6 @@ public class ConsoleClient {
 
     events.register(commandLine);
     events.register(connection);
-    events.dispatch();
+    events.dispatch(30 * 1000);
   }
 }
