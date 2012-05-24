@@ -55,15 +55,13 @@ public class Events {
   private List<EventSource> sources = new ArrayList<EventSource>();
   private Selector selector;
   private boolean stopped;
-  private long idleMsec;
 
-  public static Events open(long idleMsec) throws IOException {
-    return new Events(Selector.open(), idleMsec);
+  public static Events open() throws IOException {
+    return new Events(Selector.open());
   }
 
-  public Events(Selector selector, long idleMsec) {
+  public Events(Selector selector) {
     this.selector = selector;
-    this.idleMsec = idleMsec;
   }
 
   public void register(EventSource source) throws IOException {
@@ -72,15 +70,14 @@ public class Events {
     sources.add(source);
   }
 
-  public void dispatch() throws IOException {
+  public void dispatch(long timeout) throws IOException {
     while (!isStopped()) {
-      if (!process())
+      if (!process(timeout))
         break;
     }
   }
 
-  public boolean process() throws IOException {
-    long timeout = idleMsec;
+  public boolean process(long timeout) throws IOException {
     while (timeout > 0) {
       long start = System.nanoTime();
       int numKeys = selector.select(timeout);
