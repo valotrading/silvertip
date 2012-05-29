@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>silvertip</groupId>
     <artifactId>silvertip</artifactId>
-    <version>0.2.6</version>
+    <version>0.2.8-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>jline</groupId>
