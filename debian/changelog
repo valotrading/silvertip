@@ -1,0 +1,5 @@
+libsilvertip-java (0.2.8-1) unstable; urgency=low
+
+  * Debian packaging.
+
+ -- Pekka Enberg <penberg@iki.fi>  Tue, 29 May 2012 11:36:34 +0000
