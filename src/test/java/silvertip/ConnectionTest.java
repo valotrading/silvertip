@@ -3,6 +3,7 @@ package silvertip;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -164,6 +165,7 @@ public class ConnectionTest {
       events.register(connection);
       events.dispatch(IDLE_MSEC);
     } finally {
+      server.stop();
       server.awaitForStop();
     }
   }
@@ -177,18 +179,44 @@ public class ConnectionTest {
 
     private final CountDownLatch serverStopped = new CountDownLatch(1);
     private final CountDownLatch serverStarted = new CountDownLatch(1);
-    private final String message;
-    private final int port;
+    private final Server server;
     private final int options;
 
-    public TestServer(int port, String message, int options) {
-      this.message = message;
-      this.port = port;
+    public TestServer(int port, String message, int options) throws IOException {
       this.options = options;
+      this.server = serve(message, port);
+    }
+
+    private Server serve(final String message, int port) throws IOException {
+      final Connection.Callback<String> callback = new Connection.Callback<String>() {
+        @Override public void connected(Connection<String> connection) {
+          connection.send(message.getBytes());
+
+          if ((options & OPTION_CLOSE) != 0)
+            connection.close();
+        }
+
+        @Override public void messages(Connection<String> connection, Iterator<String> messages) {}
+        @Override public void idle(Connection<String> connection) {}
+        @Override public void closed(Connection<String> connection) {}
+        @Override public void garbledMessage(Connection<String> connection, String garbledMessage, byte[] data) {}
+      };
+
+      Server server = Server.accept(port, new Server.ConnectionFactory<String>() {
+        @Override public Connection<String> newConnection(SocketChannel channel) {
+          return new Connection(channel, null, callback);
+        }
+      });
+
+      return server;
     }
 
     public void awaitForStart() throws InterruptedException {
       serverStarted.await();
+    }
+
+    public void stop() throws IOException {
+      server.close();
     }
 
     public void awaitForStop() throws InterruptedException {
@@ -196,36 +224,17 @@ public class ConnectionTest {
     }
 
     @Override public void run() {
-      Connection.Callback<String> callback = new Connection.Callback<String>() {
-        @Override public void connected(Connection<String> connection) {}
-        @Override public void messages(Connection<String> connection, Iterator<String> messages) {}
-        @Override public void idle(Connection<String> connection) {}
-        @Override public void closed(Connection<String> connection) {}
-        @Override public void garbledMessage(Connection<String> connection, String garbledMessage, byte[] data) {}
-      };
-      Connection<String> connection = null;
+      serverStarted.countDown();
+
       try {
-        serverStarted.countDown();
-        connection = Connection.accept(new InetSocketAddress(port), null, callback);
-        sendMessage(connection);
-      } catch (Exception e) {
+        Events events = Events.open();
+        events.register(server);
+        events.dispatch(IDLE_MSEC);
+      } catch (IOException e) {
         throw new RuntimeException(e);
       } finally {
-        if (connection != null) {
-          connection.close();
-        }
         serverStopped.countDown();
       }
-    }
-
-    private void sendMessage(Connection connection) throws IOException {
-      Events events = Events.open();
-      events.register(connection);
-      connection.send(message.getBytes());
-      if ((options & OPTION_CLOSE) != 0)
-        events.stop();
-      else
-        events.dispatch(IDLE_MSEC);
     }
   }
 }
