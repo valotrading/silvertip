@@ -17,9 +17,6 @@ import org.junit.Test;
 public class ConnectionTest {
   private static final int IDLE_MSEC = 50;
 
-  public ConnectionTest() throws IOException {
-  }
-
   @Test
   public void garbledMessage() throws Exception {
     final String message = "The quick brown fox jumps over the lazy dog";
