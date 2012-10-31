@@ -2,8 +2,6 @@ package silvertip;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Random;
@@ -29,8 +27,7 @@ public class ConnectionTest {
         connection.close();
       }
 
-      @Override public void closed(Connection<Message> connection) {
-      }
+      @Override public void closed(Connection<Message> connection) {}
 
       @Override public void garbledMessage(String garbledMessage, byte[] data) {
         Assert.assertEquals(message, new String(data));
@@ -58,8 +55,7 @@ public class ConnectionTest {
         connection.close();
       }
 
-      @Override public void closed(Connection<Message> connection) {
-      }
+      @Override public void closed(Connection<Message> connection) {}
 
       @Override public void garbledMessage(String message, byte[] data) {
         Assert.fail("partial message should not be treated as garbled");
@@ -89,8 +85,7 @@ public class ConnectionTest {
         Assert.fail("idle detected");
       }
 
-      @Override public void closed(Connection<Message> connection) {
-      }
+      @Override public void closed(Connection<Message> connection) {}
 
       @Override public void garbledMessage(String message, byte[] data) {
         Assert.fail("none of the messages should be treated as garbled");
@@ -124,8 +119,7 @@ public class ConnectionTest {
         before = now;
       }
 
-      @Override public void closed(Connection<Message> connection) {
-      }
+      @Override public void closed(Connection<Message> connection) {}
 
       @Override public void garbledMessage(String message, byte[] data) {
         Assert.fail();
