@@ -21,7 +21,7 @@ public class ConnectionTest {
 
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.fail();
+        Assert.fail("messages detected");
       }
 
       @Override public void idle(Connection<Message> connection) {
@@ -62,7 +62,7 @@ public class ConnectionTest {
       @Override public void closed(Connection<Message> connection) {}
 
       @Override public void garbledMessage(String message, byte[] data) {
-        Assert.fail("partial message should not be treated as garbled");
+        Assert.fail("garbled message detected");
       }
     };
 
@@ -95,7 +95,7 @@ public class ConnectionTest {
       @Override public void closed(Connection<Message> connection) {}
 
       @Override public void garbledMessage(String message, byte[] data) {
-        Assert.fail("none of the messages should be treated as garbled");
+        Assert.fail("garbled message detected");
       }
     };
 
@@ -117,12 +117,12 @@ public class ConnectionTest {
       int count;
 
       @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.fail();
+        Assert.fail("messages detected");
       }
 
       @Override public void idle(Connection<Message> connection) {
         long now = System.nanoTime();
-        Assert.assertTrue("spurious timeout", TimeUnit.NANOSECONDS.toMillis(now - before) >= IDLE_MSEC);
+        Assert.assertTrue("spurious timeout detected", TimeUnit.NANOSECONDS.toMillis(now - before) >= IDLE_MSEC);
         if (count++ == 5)
           connection.close();
         before = now;
@@ -131,7 +131,7 @@ public class ConnectionTest {
       @Override public void closed(Connection<Message> connection) {}
 
       @Override public void garbledMessage(String message, byte[] data) {
-        Assert.fail();
+        Assert.fail("garbled message detected");
       }
     };
 
@@ -146,7 +146,7 @@ public class ConnectionTest {
 
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.fail();
+        Assert.fail("messages detected");
       }
 
       @Override public void idle(Connection<Message> connection) {
@@ -158,7 +158,7 @@ public class ConnectionTest {
       }
 
       @Override public void garbledMessage(String message, byte[] data) {
-        Assert.fail();
+        Assert.fail("garbled message detected");
       }
     };
 
