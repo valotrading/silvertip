@@ -18,6 +18,7 @@ public class Server implements EventSource {
   public static Server accept(int port, ConnectionFactory<?> factory) throws IOException {
     ServerSocketChannel serverChannel = ServerSocketChannel.open();
     serverChannel.configureBlocking(false);
+    serverChannel.socket().setReuseAddress(true);
     serverChannel.socket().bind(new InetSocketAddress(port));
     return new Server(serverChannel, factory);
   }
