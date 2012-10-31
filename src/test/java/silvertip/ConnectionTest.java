@@ -18,6 +18,7 @@ public class ConnectionTest {
   @Test
   public void garbledMessage() throws Exception {
     final String message = "The quick brown fox jumps over the lazy dog";
+
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.fail();
@@ -33,6 +34,7 @@ public class ConnectionTest {
         Assert.assertEquals(message, new String(data));
       }
     };
+
     MessageParser<Message> parser = new MessageParser<Message>() {
       @Override public Message parse(ByteBuffer buffer) throws GarbledMessageException, PartialMessageException {
         byte[] data = new byte[buffer.limit() - buffer.position()];
@@ -40,12 +42,14 @@ public class ConnectionTest {
         throw new GarbledMessageException("garbled message", data);
       }
     };
+
     sendMessage(message, callback, parser);
   }
 
   @Test
   public void partialMessage() throws Exception {
     final String message = "The quick brown fox...";
+
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.fail("partial message detected");
@@ -61,17 +65,20 @@ public class ConnectionTest {
         Assert.fail("partial message should not be treated as garbled");
       }
     };
+
     MessageParser<Message> parser = new MessageParser<Message>() {
       @Override public Message parse(ByteBuffer buffer) throws PartialMessageException {
         throw new PartialMessageException();
       }
     };
+
     sendMessage(message, callback, parser);
   }
 
   @Test
   public void multipleMessages() throws Exception {
     final String message = "ABC";
+
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
         Assert.assertEquals("A", messages.next().toString());
@@ -91,6 +98,7 @@ public class ConnectionTest {
         Assert.fail("none of the messages should be treated as garbled");
       }
     };
+
     MessageParser<Message> parser = new MessageParser<Message>() {
       @Override public Message parse(ByteBuffer buffer) throws PartialMessageException {
         byte[] message = new byte[1];
@@ -98,6 +106,7 @@ public class ConnectionTest {
         return new Message(message);
       }
     };
+
     sendMessage(message, callback, parser);
   }
 
@@ -125,6 +134,7 @@ public class ConnectionTest {
         Assert.fail();
       }
     };
+
     sendMessage("", callback, null);
   }
 
