@@ -142,7 +142,7 @@ public class ConnectionTest {
   public void closed() throws Exception {
     final AtomicBoolean connectionClosed = new AtomicBoolean(false);
     final int port = getRandomPort();
-    final StubServer server = new StubServer(port, "", false);
+    final TestServer server = new TestServer(port, "", false);
 
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
@@ -180,7 +180,7 @@ public class ConnectionTest {
   private void sendMessage(final String message, Connection.Callback<Message> callback, MessageParser<Message> parser)
       throws InterruptedException, IOException {
     final int port = getRandomPort();
-    StubServer server = new StubServer(port, message);
+    TestServer server = new TestServer(port, message);
     Thread serverThread = new Thread(server);
     serverThread.start();
     server.awaitForStart();
@@ -199,7 +199,7 @@ public class ConnectionTest {
     return new Random(System.currentTimeMillis()).nextInt(1024) + 1024;
   }
 
-  private final class StubServer implements Runnable {
+  private final class TestServer implements Runnable {
     private final CountDownLatch serverStopped = new CountDownLatch(1);
     private final CountDownLatch serverStarted = new CountDownLatch(1);
     private final CountDownLatch clientStopped = new CountDownLatch(1);
@@ -207,11 +207,11 @@ public class ConnectionTest {
     private final int port;
     private final boolean linger;
 
-    private StubServer(int port, String message) {
+    private TestServer(int port, String message) {
       this(port, message, true);
     }
 
-    private StubServer(int port, String message, boolean linger) {
+    private TestServer(int port, String message, boolean linger) {
       this.message = message;
       this.port = port;
       this.linger = linger;
