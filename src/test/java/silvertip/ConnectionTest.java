@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,6 +19,7 @@ public class ConnectionTest {
   @Test
   public void garbledMessage() throws Exception {
     final String message = "The quick brown fox jumps over the lazy dog";
+    final AtomicReference<String> garbledMessageData = new AtomicReference<String>(null);
 
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
@@ -30,8 +32,8 @@ public class ConnectionTest {
 
       @Override public void closed(Connection<Message> connection) {}
 
-      @Override public void garbledMessage(String garbledMessage, byte[] data) {
-        Assert.assertEquals(message, new String(data));
+      @Override public void garbledMessage(String message, byte[] data) {
+        garbledMessageData.set(new String(data));
       }
     };
 
@@ -44,6 +46,8 @@ public class ConnectionTest {
     };
 
     sendMessage(message, callback, parser);
+
+    Assert.assertEquals(message, garbledMessageData.get());
   }
 
   @Test
