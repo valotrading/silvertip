@@ -177,7 +177,7 @@ public class ConnectionTest {
     Assert.assertTrue("callback not called", connectionClosed.get());
   }
 
-  private void sendMessage(final String message, Connection.Callback<Message> callback, MessageParser<Message> parser)
+  private void sendMessage(String message, Connection.Callback<Message> callback, MessageParser<Message> parser)
       throws InterruptedException, IOException {
     final int port = getRandomPort();
     TestServer server = new TestServer(port, message);
