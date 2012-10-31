@@ -17,6 +17,8 @@ public class ConnectionTest {
   private static final int IDLE_MSEC = 50;
 
   private static class Callback implements Connection.Callback<Message> {
+    @Override public void connected(Connection<Message> connection) {}
+
     @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
       Assert.fail("messages detected");
       connection.close();
@@ -195,6 +197,7 @@ public class ConnectionTest {
 
     @Override public void run() {
       Connection.Callback<String> callback = new Connection.Callback<String>() {
+        @Override public void connected(Connection<String> connection) {}
         @Override public void messages(Connection<String> connection, Iterator<String> messages) {}
         @Override public void idle(Connection<String> connection) {}
         @Override public void closed(Connection<String> connection) {}
