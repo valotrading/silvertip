@@ -82,14 +82,16 @@ public class ConnectionTest {
   @Test
   public void multipleMessages() throws Exception {
     final String message = "ABC";
+    final AtomicReference<String> receivedMessages = new AtomicReference("");
 
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.assertEquals("A", messages.next().toString());
-        Assert.assertEquals("B", messages.next().toString());
-        Assert.assertEquals("C", messages.next().toString());
-        Assert.assertFalse(messages.hasNext());
-        connection.close();
+        while (messages.hasNext()) {
+          receivedMessages.set(receivedMessages.get() + messages.next());
+        }
+
+        if (receivedMessages.get().length() == message.length())
+          connection.close();
       }
 
       @Override public void idle(Connection<Message> connection) {
@@ -112,6 +114,8 @@ public class ConnectionTest {
     };
 
     sendMessage(message, callback, parser);
+
+    Assert.assertEquals(message, receivedMessages.get());
   }
 
   @Test
