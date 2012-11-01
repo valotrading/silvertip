@@ -16,21 +16,33 @@ import org.junit.Test;
 public class ConnectionTest {
   private static final int IDLE_MSEC = 50;
 
+  private static class Callback implements Connection.Callback<Message> {
+    @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
+      Assert.fail("messages detected");
+      connection.close();
+    }
+
+    @Override public void idle(Connection<Message> connection) {
+      Assert.fail("idle detected");
+      connection.close();
+    }
+
+    @Override public void closed(Connection<Message> connection) {}
+
+    @Override public void garbledMessage(String message, byte[] data) {
+      Assert.fail("garbled message detected");
+    }
+  }
+
   @Test
   public void garbledMessage() throws Exception {
     final String message = "The quick brown fox jumps over the lazy dog";
     final AtomicReference<String> garbledMessageData = new AtomicReference<String>(null);
 
-    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
-      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.fail("messages detected");
-      }
-
+    Callback callback = new Callback() {
       @Override public void idle(Connection<Message> connection) {
         connection.close();
       }
-
-      @Override public void closed(Connection<Message> connection) {}
 
       @Override public void garbledMessage(String message, byte[] data) {
         garbledMessageData.set(new String(data));
@@ -54,19 +66,9 @@ public class ConnectionTest {
   public void partialMessage() throws Exception {
     final String message = "The quick brown fox...";
 
-    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
-      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.fail("partial message detected");
-      }
-
+    Callback callback = new Callback() {
       @Override public void idle(Connection<Message> connection) {
         connection.close();
-      }
-
-      @Override public void closed(Connection<Message> connection) {}
-
-      @Override public void garbledMessage(String message, byte[] data) {
-        Assert.fail("garbled message detected");
       }
     };
 
@@ -84,7 +86,7 @@ public class ConnectionTest {
     final String message = "ABC";
     final AtomicReference<String> receivedMessages = new AtomicReference("");
 
-    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
+    Callback callback = new Callback() {
       @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
         while (messages.hasNext()) {
           receivedMessages.set(receivedMessages.get() + messages.next());
@@ -92,16 +94,6 @@ public class ConnectionTest {
 
         if (receivedMessages.get().length() == message.length())
           connection.close();
-      }
-
-      @Override public void idle(Connection<Message> connection) {
-        Assert.fail("idle detected");
-      }
-
-      @Override public void closed(Connection<Message> connection) {}
-
-      @Override public void garbledMessage(String message, byte[] data) {
-        Assert.fail("garbled message detected");
       }
     };
 
@@ -120,13 +112,9 @@ public class ConnectionTest {
 
   @Test
   public void idle() throws Exception {
-    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
+    Callback callback = new Callback() {
       long before = System.nanoTime();
       int count;
-
-      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.fail("messages detected");
-      }
 
       @Override public void idle(Connection<Message> connection) {
         long now = System.nanoTime();
@@ -134,12 +122,6 @@ public class ConnectionTest {
         if (count++ == 5)
           connection.close();
         before = now;
-      }
-
-      @Override public void closed(Connection<Message> connection) {}
-
-      @Override public void garbledMessage(String message, byte[] data) {
-        Assert.fail("garbled message detected");
       }
     };
 
@@ -150,21 +132,9 @@ public class ConnectionTest {
   public void closed() throws Exception {
     final AtomicBoolean connectionClosed = new AtomicBoolean(false);
 
-    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
-      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.fail("messages detected");
-      }
-
-      @Override public void idle(Connection<Message> connection) {
-        Assert.fail("idle detected");
-      }
-
+    Callback callback = new Callback() {
       @Override public void closed(Connection<Message> connection) {
         connectionClosed.set(true);
-      }
-
-      @Override public void garbledMessage(String message, byte[] data) {
-        Assert.fail("garbled message detected");
       }
     };
 
