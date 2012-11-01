@@ -24,7 +24,7 @@ public class Connection<T> implements EventSource {
 
     void closed(Connection<T> connection);
 
-    void garbledMessage(String message, byte[] data);
+    void garbledMessage(Connection<T> connection, String message, byte[] data);
   }
 
   private List<ByteBuffer> txBuffers = Collections.synchronizedList(new LinkedList<ByteBuffer>());
@@ -114,7 +114,7 @@ public class Connection<T> implements EventSource {
         rxBuffer.reset();
         break;
       } catch (GarbledMessageException e) {
-        callback.garbledMessage(e.getMessage(), e.getMessageData());
+        callback.garbledMessage(this, e.getMessage(), e.getMessageData());
       }
     }
     rxBuffer.compact();
