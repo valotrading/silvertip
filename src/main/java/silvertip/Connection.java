@@ -18,6 +18,8 @@ import java.util.List;
 
 public class Connection<T> implements EventSource {
   public interface Callback<T> {
+    void connected(Connection<T> connection);
+
     void messages(Connection<T> connection, Iterator<T> messages);
 
     void idle(Connection<T> connection);
@@ -76,7 +78,9 @@ public class Connection<T> implements EventSource {
   }
 
   @Override public SelectionKey register(Selector selector, int ops) throws IOException {
-    return selectionKey = channel.register(selector, ops);
+    selectionKey = channel.register(selector, ops);
+    callback.connected(this);
+    return selectionKey;
   }
 
   @Override public void unregister() {
