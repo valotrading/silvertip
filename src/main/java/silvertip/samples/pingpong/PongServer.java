@@ -28,6 +28,9 @@ public class PongServer implements Runnable {
           return new Connection<String>(channel, new PingPongMessageParser(), new Callback<String>() {
             private int pingCount;
 
+            @Override public void connected(Connection<String> connection) {
+            }
+
             @Override public void messages(Connection<String> connection, Iterator<String> messages) {
               while (messages.hasNext()) {
                 process(connection, messages.next());

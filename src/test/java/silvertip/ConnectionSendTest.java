@@ -50,6 +50,9 @@ public class ConnectionSendTest {
     private int start;
     private int total;
 
+    @Override public void connected(Connection<Message> connection) {
+    }
+
     @Override public void idle(Connection<Message> connection) {
       Random generator = new Random();
       List<Message> messages = new ArrayList<Message>();
@@ -113,6 +116,8 @@ public class ConnectionSendTest {
         }
       };
       Connection.Callback<Integer> callback = new Connection.Callback<Integer>() {
+        @Override public void connected(Connection<Integer> connection) {}
+
         int count = 0;
         @Override public void messages(Connection<Integer> connection, Iterator<Integer> messages) {
           while (messages.hasNext()) {
