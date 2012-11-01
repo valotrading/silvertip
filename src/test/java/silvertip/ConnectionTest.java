@@ -149,8 +149,6 @@ public class ConnectionTest {
   @Test
   public void closed() throws Exception {
     final AtomicBoolean connectionClosed = new AtomicBoolean(false);
-    final int port = getRandomPort();
-    final TestServer server = new TestServer(port, "", false);
 
     Connection.Callback<Message> callback = new Connection.Callback<Message>() {
       @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
@@ -158,7 +156,7 @@ public class ConnectionTest {
       }
 
       @Override public void idle(Connection<Message> connection) {
-        server.notifyClientStopped();
+        Assert.fail("idle detected");
       }
 
       @Override public void closed(Connection<Message> connection) {
@@ -170,25 +168,20 @@ public class ConnectionTest {
       }
     };
 
-    Thread serverThread = new Thread(server);
-    serverThread.start();
-    server.awaitForStart();
-    try {
-      final Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), null, callback);
-      Events events = Events.open();
-      events.register(connection);
-      events.dispatch(IDLE_MSEC);
-    } finally {
-      server.awaitForStop();
-    }
+    sendMessage("", callback, null, TestServer.OPTION_CLOSE);
 
     Assert.assertTrue("callback not called", connectionClosed.get());
   }
 
   private void sendMessage(String message, Connection.Callback<Message> callback, MessageParser<Message> parser)
       throws InterruptedException, IOException {
+    sendMessage(message, callback, parser, 0);
+  }
+
+  private void sendMessage(String message, Connection.Callback<Message> callback, MessageParser<Message> parser,
+      int options) throws InterruptedException, IOException {
     final int port = getRandomPort();
-    TestServer server = new TestServer(port, message);
+    TestServer server = new TestServer(port, message, options);
     Thread serverThread = new Thread(server);
     serverThread.start();
     server.awaitForStart();
@@ -198,7 +191,6 @@ public class ConnectionTest {
       events.register(connection);
       events.dispatch(IDLE_MSEC);
     } finally {
-      server.notifyClientStopped();
       server.awaitForStop();
     }
   }
@@ -208,29 +200,22 @@ public class ConnectionTest {
   }
 
   private final class TestServer implements Runnable {
+    public static final int OPTION_CLOSE = 0x01;
+
     private final CountDownLatch serverStopped = new CountDownLatch(1);
     private final CountDownLatch serverStarted = new CountDownLatch(1);
-    private final CountDownLatch clientStopped = new CountDownLatch(1);
     private final String message;
     private final int port;
-    private final boolean linger;
+    private final int options;
 
-    private TestServer(int port, String message) {
-      this(port, message, true);
-    }
-
-    private TestServer(int port, String message, boolean linger) {
+    public TestServer(int port, String message, int options) {
       this.message = message;
       this.port = port;
-      this.linger = linger;
+      this.options = options;
     }
 
     public void awaitForStart() throws InterruptedException {
       serverStarted.await();
-    }
-
-    public void notifyClientStopped() {
-      clientStopped.countDown();
     }
 
     public void awaitForStop() throws InterruptedException {
@@ -249,7 +234,6 @@ public class ConnectionTest {
         serverStarted.countDown();
         connection = Connection.accept(new InetSocketAddress(port), null, callback);
         sendMessage(connection);
-        clientStopped.await();
       } catch (Exception e) {
         throw new RuntimeException(e);
       } finally {
@@ -264,11 +248,10 @@ public class ConnectionTest {
       Events events = Events.open();
       events.register(connection);
       connection.send(message.getBytes());
-      if (linger) {
-        events.dispatch(IDLE_MSEC);
-      } else {
+      if ((options & OPTION_CLOSE) != 0)
         events.stop();
-      }
+      else
+        events.dispatch(IDLE_MSEC);
     }
   }
 }
