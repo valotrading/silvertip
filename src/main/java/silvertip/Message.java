@@ -1,12 +1,15 @@
 package silvertip;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 public class Message {
+  private static final Charset US_ASCII = Charset.forName("US-ASCII");
+
   private final byte[] payload;
 
   public static Message fromString(String s) {
-    return new Message(s.getBytes());
+    return new Message(s.getBytes(US_ASCII));
   }
 
   public Message(byte[] payload) {
@@ -23,6 +26,6 @@ public class Message {
 
   @Override
   public String toString() {
-    return new String(payload);
+    return new String(payload, US_ASCII);
   }
 }

@@ -1,1 +1,0 @@
-- message payload encoding is not handled at all
