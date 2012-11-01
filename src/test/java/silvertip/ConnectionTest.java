@@ -2,14 +2,13 @@ package silvertip;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,28 +16,39 @@ import org.junit.Test;
 public class ConnectionTest {
   private static final int IDLE_MSEC = 50;
 
-  public ConnectionTest() throws IOException {
+  private static class Callback implements Connection.Callback<Message> {
+    @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
+      Assert.fail("messages detected");
+      connection.close();
+    }
+
+    @Override public void idle(Connection<Message> connection) {
+      Assert.fail("idle detected");
+      connection.close();
+    }
+
+    @Override public void closed(Connection<Message> connection) {}
+
+    @Override public void garbledMessage(String message, byte[] data) {
+      Assert.fail("garbled message detected");
+    }
   }
 
   @Test
   public void garbledMessage() throws Exception {
     final String message = "The quick brown fox jumps over the lazy dog";
-    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
-      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.fail();
-      }
+    final AtomicReference<String> garbledMessageData = new AtomicReference<String>(null);
 
+    Callback callback = new Callback() {
       @Override public void idle(Connection<Message> connection) {
         connection.close();
       }
 
-      @Override public void closed(Connection<Message> connection) {
-      }
-
-      @Override public void garbledMessage(String garbledMessage, byte[] data) {
-        Assert.assertEquals(message, new String(data));
+      @Override public void garbledMessage(String message, byte[] data) {
+        garbledMessageData.set(new String(data));
       }
     };
+
     MessageParser<Message> parser = new MessageParser<Message>() {
       @Override public Message parse(ByteBuffer buffer) throws GarbledMessageException, PartialMessageException {
         byte[] data = new byte[buffer.limit() - buffer.position()];
@@ -46,59 +56,47 @@ public class ConnectionTest {
         throw new GarbledMessageException("garbled message", data);
       }
     };
+
     sendMessage(message, callback, parser);
+
+    Assert.assertEquals(message, garbledMessageData.get());
   }
 
   @Test
   public void partialMessage() throws Exception {
     final String message = "The quick brown fox...";
-    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
-      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.fail("partial message detected");
-      }
 
+    Callback callback = new Callback() {
       @Override public void idle(Connection<Message> connection) {
         connection.close();
       }
-
-      @Override public void closed(Connection<Message> connection) {
-      }
-
-      @Override public void garbledMessage(String message, byte[] data) {
-        Assert.fail("partial message should not be treated as garbled");
-      }
     };
+
     MessageParser<Message> parser = new MessageParser<Message>() {
       @Override public Message parse(ByteBuffer buffer) throws PartialMessageException {
         throw new PartialMessageException();
       }
     };
+
     sendMessage(message, callback, parser);
   }
 
   @Test
   public void multipleMessages() throws Exception {
     final String message = "ABC";
-    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
+    final AtomicReference<String> receivedMessages = new AtomicReference("");
+
+    Callback callback = new Callback() {
       @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.assertEquals("A", messages.next().toString());
-        Assert.assertEquals("B", messages.next().toString());
-        Assert.assertEquals("C", messages.next().toString());
-        Assert.assertFalse(messages.hasNext());
-        connection.close();
-      }
+        while (messages.hasNext()) {
+          receivedMessages.set(receivedMessages.get() + messages.next());
+        }
 
-      @Override public void idle(Connection<Message> connection) {
-        Assert.fail("idle detected");
-      }
-
-      @Override public void closed(Connection<Message> connection) {
-      }
-
-      @Override public void garbledMessage(String message, byte[] data) {
-        Assert.fail("none of the messages should be treated as garbled");
+        if (receivedMessages.get().length() == message.length())
+          connection.close();
       }
     };
+
     MessageParser<Message> parser = new MessageParser<Message>() {
       @Override public Message parse(ByteBuffer buffer) throws PartialMessageException {
         byte[] message = new byte[1];
@@ -106,80 +104,54 @@ public class ConnectionTest {
         return new Message(message);
       }
     };
+
     sendMessage(message, callback, parser);
+
+    Assert.assertEquals(message, receivedMessages.get());
   }
 
   @Test
   public void idle() throws Exception {
-    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
+    Callback callback = new Callback() {
       long before = System.nanoTime();
       int count;
 
-      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.fail();
-      }
-
       @Override public void idle(Connection<Message> connection) {
         long now = System.nanoTime();
-        Assert.assertTrue("spurious timeout", TimeUnit.NANOSECONDS.toMillis(now - before) >= IDLE_MSEC);
+        Assert.assertTrue("spurious timeout detected", TimeUnit.NANOSECONDS.toMillis(now - before) >= IDLE_MSEC);
         if (count++ == 5)
           connection.close();
         before = now;
       }
-
-      @Override public void closed(Connection<Message> connection) {
-      }
-
-      @Override public void garbledMessage(String message, byte[] data) {
-        Assert.fail();
-      }
     };
+
     sendMessage("", callback, null);
   }
 
   @Test
   public void closed() throws Exception {
     final AtomicBoolean connectionClosed = new AtomicBoolean(false);
-    final int port = getRandomPort();
-    final StubServer server = new StubServer(port, "", false);
 
-    Connection.Callback<Message> callback = new Connection.Callback<Message>() {
-      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        Assert.fail();
-      }
-
-      @Override public void idle(Connection<Message> connection) {
-        server.notifyClientStopped();
-      }
-
+    Callback callback = new Callback() {
       @Override public void closed(Connection<Message> connection) {
         connectionClosed.set(true);
       }
-
-      @Override public void garbledMessage(String message, byte[] data) {
-        Assert.fail();
-      }
     };
 
-    Thread serverThread = new Thread(server);
-    serverThread.start();
-    server.awaitForStart();
-    try {
-      final Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), null, callback);
-      Events events = Events.open();
-      events.register(connection);
-      events.dispatch(IDLE_MSEC);
-    } finally {
-      server.awaitForStop();
-    }
+    sendMessage("", callback, null, TestServer.OPTION_CLOSE);
 
     Assert.assertTrue("callback not called", connectionClosed.get());
   }
 
-  private void sendMessage(final String message, Connection.Callback<Message> callback, MessageParser<Message> parser)
+  private void sendMessage(String message, Connection.Callback<Message> callback, MessageParser<Message> parser)
       throws InterruptedException, IOException {
+    sendMessage(message, callback, parser, 0);
+  }
+
+  private void sendMessage(String message, Connection.Callback<Message> callback, MessageParser<Message> parser,
+      int options) throws InterruptedException, IOException {
     final int port = getRandomPort();
-    StubServer server = new StubServer(port, message);
+    TestServer server = new TestServer(port, message, options);
     Thread serverThread = new Thread(server);
     serverThread.start();
     server.awaitForStart();
@@ -189,7 +161,6 @@ public class ConnectionTest {
       events.register(connection);
       events.dispatch(IDLE_MSEC);
     } finally {
-      server.notifyClientStopped();
       server.awaitForStop();
     }
   }
@@ -198,30 +169,23 @@ public class ConnectionTest {
     return new Random(System.currentTimeMillis()).nextInt(1024) + 1024;
   }
 
-  private final class StubServer implements Runnable {
+  private final class TestServer implements Runnable {
+    public static final int OPTION_CLOSE = 0x01;
+
     private final CountDownLatch serverStopped = new CountDownLatch(1);
     private final CountDownLatch serverStarted = new CountDownLatch(1);
-    private final CountDownLatch clientStopped = new CountDownLatch(1);
     private final String message;
     private final int port;
-    private final boolean linger;
+    private final int options;
 
-    private StubServer(int port, String message) {
-      this(port, message, true);
-    }
-
-    private StubServer(int port, String message, boolean linger) {
+    public TestServer(int port, String message, int options) {
       this.message = message;
       this.port = port;
-      this.linger = linger;
+      this.options = options;
     }
 
     public void awaitForStart() throws InterruptedException {
       serverStarted.await();
-    }
-
-    public void notifyClientStopped() {
-      clientStopped.countDown();
     }
 
     public void awaitForStop() throws InterruptedException {
@@ -240,7 +204,6 @@ public class ConnectionTest {
         serverStarted.countDown();
         connection = Connection.accept(new InetSocketAddress(port), null, callback);
         sendMessage(connection);
-        clientStopped.await();
       } catch (Exception e) {
         throw new RuntimeException(e);
       } finally {
@@ -255,11 +218,10 @@ public class ConnectionTest {
       Events events = Events.open();
       events.register(connection);
       connection.send(message.getBytes());
-      if (linger) {
-        events.dispatch(IDLE_MSEC);
-      } else {
+      if ((options & OPTION_CLOSE) != 0)
         events.stop();
-      }
+      else
+        events.dispatch(IDLE_MSEC);
     }
   }
 }
