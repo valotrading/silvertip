@@ -84,7 +84,7 @@ public class ConnectionSendTest {
     @Override public void closed(Connection<Message> connection) {
     }
 
-    @Override public void garbledMessage(String message, byte[] data) {
+    @Override public void garbledMessage(Connection<Message> connection, String message, byte[] data) {
     }
   }
 
@@ -123,7 +123,7 @@ public class ConnectionSendTest {
         }
         @Override public void idle(Connection<Integer> connection) {}
         @Override public void closed(Connection<Integer> connection) {}
-        @Override public void garbledMessage(String garbledMessage, byte[] data) {}
+        @Override public void garbledMessage(Connection<Integer> connection, String garbledMessage, byte[] data) {}
       };
       Connection<Integer> connection = null;
       try {

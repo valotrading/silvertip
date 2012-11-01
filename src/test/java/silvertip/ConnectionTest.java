@@ -29,8 +29,9 @@ public class ConnectionTest {
 
     @Override public void closed(Connection<Message> connection) {}
 
-    @Override public void garbledMessage(String message, byte[] data) {
+    @Override public void garbledMessage(Connection<Message> connection, String message, byte[] data) {
       Assert.fail("garbled message detected");
+      connection.close();
     }
   }
 
@@ -44,7 +45,7 @@ public class ConnectionTest {
         connection.close();
       }
 
-      @Override public void garbledMessage(String message, byte[] data) {
+      @Override public void garbledMessage(Connection<Message> connection, String message, byte[] data) {
         garbledMessageData.set(new String(data));
       }
     };
@@ -197,7 +198,7 @@ public class ConnectionTest {
         @Override public void messages(Connection<String> connection, Iterator<String> messages) {}
         @Override public void idle(Connection<String> connection) {}
         @Override public void closed(Connection<String> connection) {}
-        @Override public void garbledMessage(String garbledMessage, byte[] data) {}
+        @Override public void garbledMessage(Connection<String> connection, String garbledMessage, byte[] data) {}
       };
       Connection<String> connection = null;
       try {
