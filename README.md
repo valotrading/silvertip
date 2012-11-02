@@ -31,3 +31,8 @@ If you're using SBT, amend your `build.sbt` with:
     resolvers += "silvertip-repository" at "http://valotrading.github.com/silvertip/maven"
 
     libraryDependencies += "silvertip" % "silvertip" % "0.2.7"
+
+License
+-------
+
+Silvertip is released under the Apache License, Version 2.0.
