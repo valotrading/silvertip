@@ -149,6 +149,38 @@ public class ConnectionTest {
 
   @Test
   public void closed() throws Exception {
+    final String message = "The quick brown fox jumps over the lazy dog";
+    final AtomicBoolean connectionClosed = new AtomicBoolean(false);
+    final AtomicReference<String> receivedMessage = new AtomicReference(null);
+
+    Callback callback = new Callback() {
+      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
+        if (messages.hasNext())
+          receivedMessage.set(messages.next().toString());
+      }
+
+      @Override public void closed(Connection<Message> connection) {
+        connectionClosed.set(true);
+      }
+    };
+
+    MessageParser<Message> parser = new MessageParser<Message>() {
+      @Override public Message parse(ByteBuffer buffer) throws PartialMessageException {
+        byte[] message = new byte[buffer.limit() - buffer.position()];
+        buffer.get(message);
+        return new Message(message);
+      }
+    };
+
+    sendMessage(message, callback, parser, TestServer.OPTION_CLOSE);
+
+    Assert.assertTrue("callback not called", connectionClosed.get());
+    Assert.assertEquals(message, receivedMessage.get());
+  }
+
+  @Test
+  public void denied() throws Exception {
+    final String message = "The quick brown fox jumps over the lazy dog";
     final AtomicBoolean connectionClosed = new AtomicBoolean(false);
 
     Callback callback = new Callback() {
@@ -157,7 +189,7 @@ public class ConnectionTest {
       }
     };
 
-    sendMessage("", callback, null, TestServer.OPTION_CLOSE);
+    sendMessage(message, callback, null, TestServer.OPTION_DENY);
 
     Assert.assertTrue("callback not called", connectionClosed.get());
   }
@@ -191,6 +223,7 @@ public class ConnectionTest {
 
   private final class TestServer implements Runnable {
     public static final int OPTION_CLOSE = 0x01;
+    public static final int OPTION_DENY = 0x02;
 
     private final CountDownLatch serverStopped = new CountDownLatch(1);
     private final CountDownLatch serverStarted = new CountDownLatch(1);
@@ -219,7 +252,10 @@ public class ConnectionTest {
 
       Server server = Server.accept(port, new Server.ConnectionFactory<String>() {
         @Override public Connection<String> newConnection(SocketChannel channel) {
-          return new Connection(channel, null, callback);
+          if ((options & OPTION_DENY) != 0)
+            return null;
+          else
+            return new Connection(channel, null, callback);
         }
       });
 
