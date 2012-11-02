@@ -66,7 +66,12 @@ public class Server implements EventSource {
     ServerSocketChannel sch = (ServerSocketChannel) key.channel();
     SocketChannel channel = sch.accept();
     channel.configureBlocking(false);
-    return factory.newConnection(channel);
+
+    Connection connection = factory.newConnection(channel);
+    if (connection == null)
+      SocketChannels.close(channel);
+
+    return connection;
   }
 
   @Override public void timeout() {
