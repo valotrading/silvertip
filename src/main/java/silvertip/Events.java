@@ -165,8 +165,6 @@ public class Events {
           EventSource newSource = source.accept(key);
           if (newSource != null)
             newSources.add(newSource);
-          else
-            key.cancel();
         }
 
         if (key.isValid()) {
