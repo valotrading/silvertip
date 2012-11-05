@@ -189,28 +189,35 @@ public class ConnectionTest {
       }
     };
 
-    sendMessage(message, callback, null, TestServer.OPTION_DENY);
+    sendMessage(message, callback, null, TestServer.OPTION_DENY, 3);
 
     Assert.assertTrue("callback not called", connectionClosed.get());
   }
 
   private void sendMessage(String message, Connection.Callback<Message> callback, MessageParser<Message> parser)
       throws InterruptedException, IOException {
-    sendMessage(message, callback, parser, 0);
+    sendMessage(message, callback, parser, 0, 1);
   }
 
   private void sendMessage(String message, Connection.Callback<Message> callback, MessageParser<Message> parser,
       int options) throws InterruptedException, IOException {
+    sendMessage(message, callback, parser, options, 1);
+  }
+
+  private void sendMessage(String message, Connection.Callback<Message> callback, MessageParser<Message> parser,
+      int options, int rounds) throws InterruptedException, IOException {
     final int port = getRandomPort();
     TestServer server = new TestServer(port, message, options);
     Thread serverThread = new Thread(server);
     serverThread.start();
     server.awaitForStart();
     try {
-      final Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), parser, callback);
-      Events events = Events.open();
-      events.register(connection);
-      events.dispatch(IDLE_MSEC);
+      for (int i = 0; i < rounds; i++) {
+        Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), parser, callback);
+        Events events = Events.open();
+        events.register(connection);
+        events.dispatch(IDLE_MSEC);
+      }
     } finally {
       server.stop();
       server.awaitForStop();
