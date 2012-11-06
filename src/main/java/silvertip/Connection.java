@@ -152,8 +152,11 @@ public class Connection<T> implements EventSource {
     txBuffers.add(buffer);
     if (selectionKey == null)
       throw new IllegalStateException("Connection is not registered");
-    selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-    selectionKey.selector().wakeup();
+    try {
+      flush();
+    } catch (IOException e) {
+      close();
+    }
   }
 
   @Override public void write(SelectionKey key) throws IOException {
@@ -186,6 +189,8 @@ public class Connection<T> implements EventSource {
       while (!txBuffers.isEmpty()) {
         ByteBuffer txBuffer = txBuffers.get(0);
         if (!write(txBuffer)) {
+          selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+          selectionKey.selector().wakeup();
           break;
         }
         txBuffers.remove(0);
