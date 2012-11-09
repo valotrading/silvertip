@@ -127,6 +127,8 @@ public class Events {
 
     if (numKeys > 0)
       dispatchMessages();
+    else
+      timeout();
 
     return true;
   }
