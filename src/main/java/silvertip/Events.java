@@ -16,6 +16,7 @@
 package silvertip;
 
 import java.io.IOException;
+import java.nio.channels.CancelledKeyException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.ArrayList;
@@ -163,18 +164,23 @@ public class Events {
       SelectionKey key = it.next();
       EventSource source = (EventSource) key.attachment();
 
-      if (key.isValid() && key.isAcceptable()) {
-        EventSource newSource = source.accept(key);
-        if (newSource != null)
-          newSources.add(newSource);
-      }
+      if (key.isValid()) {
+        try {
+          if (key.isAcceptable()) {
+            EventSource newSource = source.accept(key);
+            if (newSource != null)
+              newSources.add(newSource);
+          }
 
-      if (key.isValid() && key.isReadable()) {
-        source.read(key);
-      }
+          if (key.isReadable()) {
+            source.read(key);
+          }
 
-      if (key.isValid() && key.isWritable()) {
-        source.write(key);
+          if (key.isWritable()) {
+            source.write(key);
+          }
+        } catch (CancelledKeyException e) {
+        }
       }
 
       it.remove();
