@@ -104,6 +104,9 @@ public class ConnectionSendTest {
 
     @Override public void garbledMessage(Connection<Message> connection, String message, byte[] data) {
     }
+
+    @Override public void sent(ByteBuffer buffer) {
+    }
   }
 
   private final class StubServer implements Runnable {
@@ -144,6 +147,7 @@ public class ConnectionSendTest {
         @Override public void idle(Connection<Integer> connection) {}
         @Override public void closed(Connection<Integer> connection) {}
         @Override public void garbledMessage(Connection<Integer> connection, String garbledMessage, byte[] data) {}
+        @Override public void sent(ByteBuffer buffer) {}
       };
       Connection<Integer> connection = null;
       try {

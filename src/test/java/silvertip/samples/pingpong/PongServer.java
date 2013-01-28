@@ -16,6 +16,7 @@
 package silvertip.samples.pingpong;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
@@ -80,6 +81,9 @@ public class PongServer implements Runnable {
             }
 
             @Override public void garbledMessage(Connection<String> connection, String message, byte[] data) {
+            }
+
+            @Override public void sent(ByteBuffer buffer) {
             }
           });
         }
