@@ -51,6 +51,8 @@ public class ConnectionTest {
       Assert.fail("garbled message detected");
       connection.close();
     }
+
+    @Override public void sent(ByteBuffer buffer) { }
   }
 
   @Test
@@ -255,6 +257,7 @@ public class ConnectionTest {
         @Override public void idle(Connection<String> connection) {}
         @Override public void closed(Connection<String> connection) {}
         @Override public void garbledMessage(Connection<String> connection, String garbledMessage, byte[] data) {}
+        @Override public void sent(ByteBuffer buffer) {}
       };
 
       Server server = Server.accept(port, new Server.ConnectionFactory<String>() {

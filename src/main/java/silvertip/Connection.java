@@ -42,6 +42,8 @@ public class Connection<T> implements EventSource {
     void closed(Connection<T> connection);
 
     void garbledMessage(Connection<T> connection, String message, byte[] data);
+
+    void sent(ByteBuffer buffer);
   }
 
   private List<ByteBuffer> txBuffers = Collections.synchronizedList(new LinkedList<ByteBuffer>());
@@ -149,6 +151,7 @@ public class Connection<T> implements EventSource {
   }
 
   public void send(ByteBuffer buffer) {
+    callback.sent(buffer);
     txBuffers.add(buffer);
     if (selectionKey == null)
       throw new IllegalStateException("Connection is not registered");

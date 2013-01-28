@@ -17,6 +17,7 @@ package silvertip.samples.console;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import silvertip.CommandLine;
@@ -54,6 +55,9 @@ public class ConsoleClient {
           }
 
           @Override public void garbledMessage(Connection<String> connection, String message, byte[] data) {
+          }
+
+          @Override public void sent(ByteBuffer buffer) {
           }
         });
     final CommandLine commandLine = CommandLine.open(new CommandLine.Callback() {
