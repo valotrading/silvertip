@@ -17,6 +17,7 @@ package silvertip.samples.pingpong;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import silvertip.Connection;
@@ -50,6 +51,9 @@ public class PingClient implements Runnable {
             }
 
             @Override public void garbledMessage(Connection<String> connection, String message, byte[] data) {
+            }
+
+            @Override public void sent(ByteBuffer buffer) {
             }
           });
       Events events = Events.open();
