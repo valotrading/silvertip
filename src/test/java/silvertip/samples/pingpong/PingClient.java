@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import silvertip.Connection;
-import silvertip.Events;
+import silvertip.NioSelector;
 
 public class PingClient implements Runnable {
   @Override public void run() {
@@ -56,10 +56,10 @@ public class PingClient implements Runnable {
             @Override public void sent(ByteBuffer buffer) {
             }
           });
-      Events events = Events.open();
-      events.register(connection);
+      NioSelector selector = NioSelector.open();
+      selector.register(connection);
       connection.send("HELO\n".getBytes());
-      events.dispatch(100);
+      selector.dispatch(100);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

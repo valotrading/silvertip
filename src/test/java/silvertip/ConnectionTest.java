@@ -216,9 +216,9 @@ public class ConnectionTest {
     try {
       for (int i = 0; i < rounds; i++) {
         Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), parser, callback);
-        Events events = Events.open();
-        events.register(connection);
-        events.dispatch(IDLE_MSEC);
+        NioSelector selector = NioSelector.open();
+        selector.register(connection);
+        selector.dispatch(IDLE_MSEC);
       }
     } finally {
       server.stop();
@@ -288,9 +288,9 @@ public class ConnectionTest {
       serverStarted.countDown();
 
       try {
-        Events events = Events.open();
-        events.register(server);
-        events.dispatch(IDLE_MSEC);
+        NioSelector selector = NioSelector.open();
+        selector.register(server);
+        selector.dispatch(IDLE_MSEC);
       } catch (IOException e) {
         throw new RuntimeException(e);
       } finally {

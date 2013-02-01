@@ -25,19 +25,19 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The <code>Events</code> class is the heart of Silvertip, an event
+ * The <code>NioSelector</code> class is the heart of Silvertip, an event
  * notification API for Java. The class is a wrapper on top of NIO
  * <code>Selector</code> and can be used for polling one or more event sources
  * (TCP sockets, for example) as efficiently as possible. On Linux, the JVM uses
  * <code>epoll_ctl(2)</code> and <code>epoll_wait(2)</code> system calls to
- * implement <code>Events#register</code> and <code>Events#dispatch</code>
+ * implement <code>NioSelector#register</code> and <code>NioSelector#dispatch</code>
  * methods, respectively.
  * <p>
- * To use the API, you need to instantiate a new <code>Events</code> object and
+ * To use the API, you need to instantiate a new <code>NioSelector</code> object and
  * register one or more <code>NioChannel</code>s to it. You can then invoke
- * <code>Events#dispatch</code> method to enter event dispatch loop that returns
+ * <code>NioSelector#dispatch</code> method to enter event dispatch loop that returns
  * only if all event sources unregister themselves or you invoke the
- * <code>Events#stop</code> method.
+ * <code>NioSelector#stop</code> method.
  * <p>
  * A simple example looks like this:
  *
@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
  *        return new Message(buffer.array());
  *      }
  *   };
- *   Events events = Events.open();
+ *   NioSelector events = NioSelector.open();
  *   Connection connection = Connection.connect(address, parser, new Connection.Callback() {
  *     public void messages(Connection connection, Iterator<Message> messages) {
  *       while (messages.hasNext()) {
@@ -67,16 +67,16 @@ import java.util.concurrent.TimeUnit;
  * from a byte buffer that may contain multiple messages, including a partial
  * message at the end of the buffer.
  */
-public class Events {
+public class NioSelector {
   private List<NioChannel> sources = new ArrayList<NioChannel>();
   private Selector selector;
   private boolean stopped;
 
-  public static Events open() throws IOException {
-    return new Events(Selector.open());
+  public static NioSelector open() throws IOException {
+    return new NioSelector(Selector.open());
   }
 
-  public Events(Selector selector) {
+  public NioSelector(Selector selector) {
     this.selector = selector;
   }
 
