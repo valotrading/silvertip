@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
  *        return new Message(buffer.array());
  *      }
  *   };
- *   Events events = Events.open(30*1000); // 30 second timeout
+ *   Events events = Events.open();
  *   Connection connection = Connection.connect(address, parser, new Connection.Callback() {
  *     public void messages(Connection connection, Iterator<Message> messages) {
  *       while (messages.hasNext()) {
