@@ -31,7 +31,7 @@ import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
 
-public class CommandLine implements EventSource {
+public class CommandLine implements NioChannel {
   private static final String PROMPT = "> ";
   private static final Charset charset = Charset.forName("UTF-8");
   private static final CharsetDecoder decoder = charset.newDecoder();
@@ -98,7 +98,7 @@ public class CommandLine implements EventSource {
     throw new UnsupportedOperationException();
   }
 
-  @Override public EventSource accept(SelectionKey key) throws IOException {
+  @Override public NioChannel accept(SelectionKey key) throws IOException {
     throw new UnsupportedOperationException();
   }
 

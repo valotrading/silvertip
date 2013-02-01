@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,21 @@
 package silvertip;
 
 import java.io.IOException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 
-public interface EventSource {
-  /**
-   * Waits for events on the event source.
-   *
-   * @param timeout Timeout in milliseconds. <code>timeout</code> of zero makes
-   *                <code>poll</code> return immediately.
-   * @throws IllegalArgumentException if <code>timeout</code> is negative.
-   * @return <code>true</code> if there are new events; otherwise returns
-   *         <code>false</code>.
-   */
-  boolean poll(long timeout) throws IOException;
+public interface NioChannel {
+  SelectionKey register(Selector selector, int ops) throws IOException;
 
-  /*
-   * Stops the event source.
-   */
-  void stop();
+  void unregister();
+
+  void read(SelectionKey key) throws IOException;
+
+  void write(SelectionKey key) throws IOException;
+
+  NioChannel accept(SelectionKey key) throws IOException;
+
+  void timeout();
+
+  boolean isClosed();
 }

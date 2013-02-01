@@ -22,7 +22,7 @@ import java.util.Iterator;
 
 import silvertip.CommandLine;
 import silvertip.Connection;
-import silvertip.Events;
+import silvertip.NioSelector;
 import silvertip.samples.pingpong.PingPongMessageParser;
 
 public class ConsoleClient {
@@ -30,7 +30,7 @@ public class ConsoleClient {
     String hostname = "localhost";
     int port = 4444;
 
-    final Events events = Events.open();
+    final NioSelector selector = NioSelector.open();
 
     final Connection<String> connection = Connection.connect(new InetSocketAddress(hostname, port),
         new PingPongMessageParser(), new Connection.Callback<String>() {
@@ -42,7 +42,7 @@ public class ConsoleClient {
               String m = messages.next();
               if ("GBAI\n".equals(m)) {
                 connection.send("GBAI\n".getBytes());
-                events.stop();
+                selector.stop();
               }
             }
           }
@@ -66,8 +66,8 @@ public class ConsoleClient {
       }
     });
 
-    events.register(commandLine);
-    events.register(connection);
-    events.dispatch(30 * 1000);
+    selector.register(commandLine);
+    selector.register(connection);
+    selector.dispatch(30 * 1000);
   }
 }

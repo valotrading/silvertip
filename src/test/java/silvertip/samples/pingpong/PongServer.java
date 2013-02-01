@@ -23,7 +23,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import silvertip.Connection;
-import silvertip.Events;
+import silvertip.NioSelector;
 import silvertip.Server;
 import silvertip.Connection.Callback;
 import silvertip.Server.ConnectionFactory;
@@ -38,7 +38,7 @@ public class PongServer implements Runnable {
 
   public void run() {
     try {
-      final Events events = Events.open();
+      final NioSelector selector = NioSelector.open();
       Server server = Server.accept(4444, new ConnectionFactory<String>() {
         @Override public Connection<String> newConnection(SocketChannel channel) {
           return new Connection<String>(channel, new PingPongMessageParser(), new Callback<String>() {
@@ -77,7 +77,7 @@ public class PongServer implements Runnable {
             }
 
             @Override public void closed(Connection<String> connection) {
-              events.stop();
+              selector.stop();
             }
 
             @Override public void garbledMessage(Connection<String> connection, String message, byte[] data) {
@@ -88,9 +88,9 @@ public class PongServer implements Runnable {
           });
         }
       });
-      events.register(server);
+      selector.register(server);
       done.countDown();
-      events.dispatch(50);
+      selector.dispatch(50);
       server.close();
     } catch (IOException e) {
       throw new RuntimeException(e);

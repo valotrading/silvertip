@@ -31,7 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Connection<T> implements EventSource {
+public class Connection<T> implements NioChannel {
   public interface Callback<T> {
     void connected(Connection<T> connection);
 
@@ -214,7 +214,7 @@ public class Connection<T> implements EventSource {
     callback.idle(this);
   }
 
-  @Override public EventSource accept(SelectionKey key) throws IOException {
+  @Override public NioChannel accept(SelectionKey key) throws IOException {
     throw new UnsupportedOperationException();
   }
 
