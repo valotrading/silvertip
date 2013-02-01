@@ -67,7 +67,7 @@ import java.util.concurrent.TimeUnit;
  * from a byte buffer that may contain multiple messages, including a partial
  * message at the end of the buffer.
  */
-public class NioSelector {
+public class NioSelector implements EventSource {
   private List<NioChannel> sources = new ArrayList<NioChannel>();
   private Selector selector;
   private boolean stopped;
@@ -91,6 +91,16 @@ public class NioSelector {
       if (!process(timeout))
         break;
     }
+  }
+
+  public boolean poll(long timeout) throws IOException {
+    if (timeout < 0)
+      throw new IllegalArgumentException();
+
+    if (timeout == 0)
+      return processNow();
+
+    return process(timeout);
   }
 
   public boolean process(long timeout) throws IOException {
