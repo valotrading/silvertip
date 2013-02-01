@@ -22,7 +22,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-public class Server implements EventSource {
+public class Server implements NioChannel {
   public interface ConnectionFactory<T> {
     Connection<T> newConnection(SocketChannel channel);
   }
@@ -62,7 +62,7 @@ public class Server implements EventSource {
     throw new UnsupportedOperationException();
   }
 
-  @Override public EventSource accept(SelectionKey key) throws IOException {
+  @Override public NioChannel accept(SelectionKey key) throws IOException {
     ServerSocketChannel sch = (ServerSocketChannel) key.channel();
     SocketChannel channel = sch.accept();
     channel.configureBlocking(false);

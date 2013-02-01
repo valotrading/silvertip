@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 
-public interface EventSource {
+public interface NioChannel {
   SelectionKey register(Selector selector, int ops) throws IOException;
 
   void unregister();
@@ -28,7 +28,7 @@ public interface EventSource {
 
   void write(SelectionKey key) throws IOException;
 
-  EventSource accept(SelectionKey key) throws IOException;
+  NioChannel accept(SelectionKey key) throws IOException;
 
   void timeout();
 

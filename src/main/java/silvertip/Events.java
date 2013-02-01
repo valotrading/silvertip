@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  * methods, respectively.
  * <p>
  * To use the API, you need to instantiate a new <code>Events</code> object and
- * register one or more <code>EventSource</code>s to it. You can then invoke
+ * register one or more <code>NioChannel</code>s to it. You can then invoke
  * <code>Events#dispatch</code> method to enter event dispatch loop that returns
  * only if all event sources unregister themselves or you invoke the
  * <code>Events#stop</code> method.
@@ -68,7 +68,7 @@ import java.util.concurrent.TimeUnit;
  * message at the end of the buffer.
  */
 public class Events {
-  private List<EventSource> sources = new ArrayList<EventSource>();
+  private List<NioChannel> sources = new ArrayList<NioChannel>();
   private Selector selector;
   private boolean stopped;
 
@@ -80,7 +80,7 @@ public class Events {
     this.selector = selector;
   }
 
-  public void register(EventSource source) throws IOException {
+  public void register(NioChannel source) throws IOException {
     SelectionKey result = source.register(selector, SelectionKey.OP_READ);
     result.attach(source);
     sources.add(source);
@@ -139,9 +139,9 @@ public class Events {
   }
 
   private void unregisterClosed() {
-    Iterator<EventSource> it = sources.iterator();
+    Iterator<NioChannel> it = sources.iterator();
     while (it.hasNext()) {
-      EventSource source = it.next();
+      NioChannel source = it.next();
       if (source.isClosed()) {
         source.unregister();
         it.remove();
@@ -150,24 +150,24 @@ public class Events {
   }
 
   private void timeout() {
-    Iterator<EventSource> it = sources.iterator();
+    Iterator<NioChannel> it = sources.iterator();
     while (it.hasNext()) {
-      EventSource source = it.next();
+      NioChannel source = it.next();
       source.timeout();
     }
   }
 
   private void dispatchMessages() throws IOException {
-    List<EventSource> newSources = new ArrayList<EventSource>();
+    List<NioChannel> newSources = new ArrayList<NioChannel>();
     Iterator<SelectionKey> it = selector.selectedKeys().iterator();
     while (it.hasNext()) {
       SelectionKey key = it.next();
-      EventSource source = (EventSource) key.attachment();
+      NioChannel source = (NioChannel) key.attachment();
 
       if (key.isValid()) {
         try {
           if (key.isAcceptable()) {
-            EventSource newSource = source.accept(key);
+            NioChannel newSource = source.accept(key);
             if (newSource != null)
               newSources.add(newSource);
           }
@@ -185,7 +185,7 @@ public class Events {
 
       it.remove();
     }
-    for (EventSource source : newSources)
+    for (NioChannel source : newSources)
       register(source);
   }
 
