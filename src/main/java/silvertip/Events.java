@@ -167,17 +167,17 @@ public class Events {
       if (key.isValid()) {
         try {
           if (key.isAcceptable()) {
-            EventSource newSource = source.accept(key);
+            EventSource newSource = source.accept();
             if (newSource != null)
               newSources.add(newSource);
           }
 
           if (key.isReadable()) {
-            source.read(key);
+            source.read();
           }
 
           if (key.isWritable()) {
-            source.write(key);
+            source.write();
           }
         } catch (CancelledKeyException e) {
         }

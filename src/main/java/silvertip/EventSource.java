@@ -24,11 +24,11 @@ public interface EventSource {
 
   void unregister();
 
-  void read(SelectionKey key) throws IOException;
+  void read() throws IOException;
 
-  void write(SelectionKey key) throws IOException;
+  void write() throws IOException;
 
-  EventSource accept(SelectionKey key) throws IOException;
+  EventSource accept() throws IOException;
 
   void timeout();
 
