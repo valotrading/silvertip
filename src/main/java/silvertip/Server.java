@@ -65,6 +65,9 @@ public class Server implements EventSource {
   @Override public EventSource accept(SelectionKey key) throws IOException {
     ServerSocketChannel sch = (ServerSocketChannel) key.channel();
     SocketChannel channel = sch.accept();
+    if (channel == null)
+      return null;
+
     channel.configureBlocking(false);
 
     Connection connection = factory.newConnection(channel);
