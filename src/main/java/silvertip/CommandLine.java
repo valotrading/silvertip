@@ -71,22 +71,14 @@ public class CommandLine implements EventSource {
   }
 
   public SelectionKey register(Selector selector, int ops) throws IOException {
-    return selectionKey = getChannel().register(selector, ops);
+    return selectionKey = stdinPipe.getStdinChannel().register(selector, ops);
   }
 
   @Override public void unregister() {
   }
 
-  private SelectableChannel getChannel() {
-    try {
-      return stdinPipe.getStdinChannel();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override public void read(SelectionKey key) throws IOException {
-    ReadableByteChannel sc = (ReadableByteChannel) key.channel();
+  @Override public void read() throws IOException {
+    ReadableByteChannel sc = stdinPipe.getStdinChannel();
     ByteBuffer rxBuffer = ByteBuffer.allocate(255);
     if (sc.read(rxBuffer) < 0)
       close();
@@ -94,11 +86,11 @@ public class CommandLine implements EventSource {
     callback.commandLine(decoder.decode(rxBuffer).toString());
   }
 
-  @Override public void write(SelectionKey key) throws IOException {
+  @Override public void write() throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Override public EventSource accept(SelectionKey key) throws IOException {
+  @Override public EventSource accept() throws IOException {
     throw new UnsupportedOperationException();
   }
 
@@ -143,8 +135,8 @@ public class CommandLine implements EventSource {
       copyThread.start();
     }
 
-    public SelectableChannel getStdinChannel() throws IOException {
-      SelectableChannel result = pipe.source();
+    public Pipe.SourceChannel getStdinChannel() throws IOException {
+      Pipe.SourceChannel result = pipe.source();
       result.configureBlocking(false);
       return result;
     }

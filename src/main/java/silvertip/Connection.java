@@ -104,12 +104,11 @@ public class Connection<T> implements EventSource {
     callback.closed(this);
   }
 
-  @Override public void read(SelectionKey key) throws IOException {
-    SocketChannel sc = (SocketChannel) key.channel();
-    if (sc.isOpen()) {
+  @Override public void read() throws IOException {
+    if (channel.isOpen()) {
       int len;
       try {
-        len = sc.read(rxBuffer);
+        len = channel.read(rxBuffer);
       } catch (IOException e) {
         len = -1;
       }
@@ -162,14 +161,14 @@ public class Connection<T> implements EventSource {
     }
   }
 
-  @Override public void write(SelectionKey key) throws IOException {
+  @Override public void write() throws IOException {
     try {
       flush();
     } catch (IOException e) {
       close();
     }
     if (txBuffers.isEmpty())
-      key.interestOps(SelectionKey.OP_READ);
+      selectionKey.interestOps(SelectionKey.OP_READ);
   }
 
   public void close() {
@@ -214,7 +213,7 @@ public class Connection<T> implements EventSource {
     callback.idle(this);
   }
 
-  @Override public EventSource accept(SelectionKey key) throws IOException {
+  @Override public EventSource accept() throws IOException {
     throw new UnsupportedOperationException();
   }
 
