@@ -20,6 +20,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -114,6 +115,7 @@ public class ConnectionSendTest {
     private final CountDownLatch serverStarted = new CountDownLatch(1);
     private final int port;
     private int total;
+    private boolean closed;
 
     private StubServer(int port) {
       this.port = port;
@@ -133,7 +135,7 @@ public class ConnectionSendTest {
           return UnsignedBytes.toInt(buffer.get());
         }
       };
-      Connection.Callback<Integer> callback = new Connection.Callback<Integer>() {
+      final Connection.Callback<Integer> callback = new Connection.Callback<Integer>() {
         @Override public void connected(Connection<Integer> connection) {}
 
         int count = 0;
@@ -145,22 +147,33 @@ public class ConnectionSendTest {
           }
         }
         @Override public void idle(Connection<Integer> connection) {}
-        @Override public void closed(Connection<Integer> connection) {}
+        @Override public void closed(Connection<Integer> connection) {
+          closed = true;
+        }
         @Override public void garbledMessage(Connection<Integer> connection, String garbledMessage, byte[] data) {}
         @Override public void sent(ByteBuffer buffer) {}
       };
-      Connection<Integer> connection = null;
+      Server server = null;
       try {
         serverStarted.countDown();
-        connection = Connection.accept(new InetSocketAddress(port), parser, callback);
+        server = Server.accept(port, new Server.ConnectionFactory<Integer>() {
+          @Override public Connection<Integer> newConnection(SocketChannel channel) {
+            return new Connection(channel, parser, callback);
+          }
+        });
         Events events = Events.open();
-        events.register(connection);
-        events.dispatch(IDLE_MSEC);
+        events.register(server);
+        while (!closed)
+          events.process(IDLE_MSEC);
       } catch (IOException e) {
         throw new RuntimeException(e);
       } finally {
-        if (connection != null) {
-          connection.close();
+        if (server != null) {
+          try {
+            server.close();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
         }
         serverStopped.countDown();
       }

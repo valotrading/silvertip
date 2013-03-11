@@ -18,12 +18,10 @@ package silvertip;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,16 +72,6 @@ public class Connection<T> implements EventSource {
       throws IOException {
     SocketChannel channel = SocketChannel.open();
     channel.connect(address);
-    channel.configureBlocking(false);
-    return new Connection<T>(channel, parser, callback);
-  }
-
-  public static <T> Connection<T> accept(InetSocketAddress address, MessageParser<T> parser, Callback<T> callback) throws IOException {
-    ServerSocketChannel serverChannel = ServerSocketChannel.open();
-    ServerSocket socket = serverChannel.socket();
-    socket.bind(address);
-    SocketChannel channel = serverChannel.accept();
-    serverChannel.close();
     channel.configureBlocking(false);
     return new Connection<T>(channel, parser, callback);
   }
