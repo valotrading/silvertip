@@ -51,23 +51,6 @@ public class Connection<T> implements EventSource {
   private MessageParser<T> parser;
   private Callback<T> callback;
 
-  public static <T> Connection<T> attemptToConnect(InetSocketAddress address, MessageParser<T> parser, Callback<T> callback)
-      throws IOException {
-    return attemptToConnect(address, parser, callback, 3, 100);
-  }
-
-  public static <T> Connection<T> attemptToConnect(InetSocketAddress address, MessageParser<T> parser, Callback<T> callback,
-      int maxNumAttempts, int retryDelay) throws IOException {
-    for (int numAttempts = 0; numAttempts < maxNumAttempts; numAttempts++) {
-      try {
-        return Connection.connect(address, parser, callback);
-      } catch (ConnectException e1) {
-        try { Thread.sleep(retryDelay); } catch (InterruptedException e2) { }
-      }
-    }
-    throw new ConnectException("Could not be connected");
-  }
-
   public static <T> Connection<T> connect(InetSocketAddress address, MessageParser<T> parser, Callback<T> callback)
       throws IOException {
     SocketChannel channel = SocketChannel.open();
