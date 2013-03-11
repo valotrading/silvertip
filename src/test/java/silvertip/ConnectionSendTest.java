@@ -53,7 +53,7 @@ public class ConnectionSendTest {
     };
     final Callback callback = new Callback();
     final Events events = Events.open();
-    Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), parser, callback);
+    Connection<Message> connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
     events.register(connection);
     events.dispatch(100);
     server.awaitForStop();
