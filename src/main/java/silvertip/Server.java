@@ -54,17 +54,16 @@ public class Server implements EventSource {
   @Override public void unregister() {
   }
 
-  @Override public void read(SelectionKey key) throws IOException {
+  @Override public void read() throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void write(SelectionKey key) throws IOException {
+  @Override public void write() throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Override public EventSource accept(SelectionKey key) throws IOException {
-    ServerSocketChannel sch = (ServerSocketChannel) key.channel();
-    SocketChannel channel = sch.accept();
+  @Override public EventSource accept() throws IOException {
+    SocketChannel channel = serverChannel.accept();
     if (channel == null)
       return null;
 
