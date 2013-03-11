@@ -215,7 +215,7 @@ public class ConnectionTest {
     server.awaitForStart();
     try {
       for (int i = 0; i < rounds; i++) {
-        Connection<Message> connection = Connection.attemptToConnect(new InetSocketAddress("localhost", port), parser, callback);
+        Connection<Message> connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
         Events events = Events.open();
         events.register(connection);
         events.dispatch(IDLE_MSEC);
