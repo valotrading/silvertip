@@ -178,9 +178,6 @@ public class Connection<T> implements EventSource {
     return true;
   }
 
-  @Override public void timeout() {
-  }
-
   @Override public EventSource accept() throws IOException {
     throw new UnsupportedOperationException();
   }

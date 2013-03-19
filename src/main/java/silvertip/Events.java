@@ -104,7 +104,6 @@ public class Events {
 
       timeout -= TimeUnit.NANOSECONDS.toMillis(end - start);
       if (timeout <= 0) {
-        timeout();
         break;
       }
     }
@@ -121,8 +120,6 @@ public class Events {
 
     if (numKeys > 0)
       dispatchMessages();
-    else
-      timeout();
 
     return true;
   }
@@ -135,14 +132,6 @@ public class Events {
         source.unregister();
         it.remove();
       }
-    }
-  }
-
-  private void timeout() {
-    Iterator<EventSource> it = sources.iterator();
-    while (it.hasNext()) {
-      EventSource source = it.next();
-      source.timeout();
     }
   }
 

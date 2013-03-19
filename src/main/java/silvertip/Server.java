@@ -76,9 +76,6 @@ public class Server implements EventSource {
     return connection;
   }
 
-  @Override public void timeout() {
-  }
-
   @Override public boolean isClosed() {
     return !serverChannel.isOpen();
   }

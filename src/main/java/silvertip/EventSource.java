@@ -30,7 +30,5 @@ public interface EventSource {
 
   EventSource accept() throws IOException;
 
-  void timeout();
-
   boolean isClosed();
 }

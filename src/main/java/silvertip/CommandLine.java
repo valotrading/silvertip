@@ -94,9 +94,6 @@ public class CommandLine implements EventSource {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void timeout() {
-  }
-
   public void close() {
     selectionKey.attach(null);
     selectionKey.cancel();
