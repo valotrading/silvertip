@@ -41,8 +41,6 @@ public class ConnectionTest {
     }
 
     @Override public void idle(Connection<Message> connection) {
-      Assert.fail("idle detected");
-      connection.close();
     }
 
     @Override public void closed(Connection<Message> connection) {}
@@ -61,12 +59,9 @@ public class ConnectionTest {
     final AtomicReference<String> garbledMessageData = new AtomicReference<String>(null);
 
     Callback callback = new Callback() {
-      @Override public void idle(Connection<Message> connection) {
-        connection.close();
-      }
-
       @Override public void garbledMessage(Connection<Message> connection, String message, byte[] data) {
         garbledMessageData.set(new String(data));
+        connection.close();
       }
     };
 
@@ -87,19 +82,13 @@ public class ConnectionTest {
   public void partialMessage() throws Exception {
     final String message = "The quick brown fox...";
 
-    Callback callback = new Callback() {
-      @Override public void idle(Connection<Message> connection) {
-        connection.close();
-      }
-    };
-
     MessageParser<Message> parser = new MessageParser<Message>() {
       @Override public Message parse(ByteBuffer buffer) throws PartialMessageException {
         throw new PartialMessageException();
       }
     };
 
-    sendMessage(message, callback, parser);
+    sendMessage(message, new Callback(), parser);
   }
 
   @Test
@@ -129,24 +118,6 @@ public class ConnectionTest {
     sendMessage(message, callback, parser);
 
     Assert.assertEquals(message, receivedMessages.get());
-  }
-
-  @Test
-  public void idle() throws Exception {
-    Callback callback = new Callback() {
-      long before = System.nanoTime();
-      int count;
-
-      @Override public void idle(Connection<Message> connection) {
-        long now = System.nanoTime();
-        Assert.assertTrue("spurious timeout detected", TimeUnit.NANOSECONDS.toMillis(now - before) >= IDLE_MSEC);
-        if (count++ == 5)
-          connection.close();
-        before = now;
-      }
-    };
-
-    sendMessage("", callback, null);
   }
 
   @Test
@@ -218,10 +189,17 @@ public class ConnectionTest {
         Connection<Message> connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
         Events events = Events.open();
         events.register(connection);
-        while (true) {
+
+        long started = System.currentTimeMillis();
+        long now;
+        do {
           if (!events.process(IDLE_MSEC))
             break;
-        }
+
+          now = System.currentTimeMillis();
+        } while (now - started < IDLE_MSEC);
+
+        connection.close();
       }
     } finally {
       server.stop();
