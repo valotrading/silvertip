@@ -48,9 +48,6 @@ public class PingClient implements Runnable {
               }
             }
 
-            @Override public void idle(Connection<String> connection) {
-            }
-
             @Override public void closed(Connection<String> connection) {
             }
 

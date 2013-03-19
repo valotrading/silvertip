@@ -75,9 +75,6 @@ public class PongServer implements Runnable {
               connection.send(message.getBytes());
             }
 
-            @Override public void idle(Connection<String> connection) {
-            }
-
             @Override public void closed(Connection<String> connection) {
               closed = true;
             }

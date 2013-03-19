@@ -87,9 +87,6 @@ public class ConnectionSendTest {
       connection.close();
     }
 
-    @Override public void idle(Connection<Message> connection) {
-    }
-
     private Message newMessage(int start, int end) {
       byte[] m = new byte[end-start];
       int i = 0;
@@ -149,7 +146,6 @@ public class ConnectionSendTest {
             total++;
           }
         }
-        @Override public void idle(Connection<Integer> connection) {}
         @Override public void closed(Connection<Integer> connection) {
           closed = true;
         }

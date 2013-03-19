@@ -47,10 +47,6 @@ public class ConsoleClient {
             }
           }
 
-          @Override public void idle(Connection<String> connection) {
-            System.out.println("Idle detected.");
-          }
-
           @Override public void closed(Connection<String> connection) {
           }
 

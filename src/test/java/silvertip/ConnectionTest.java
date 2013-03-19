@@ -40,9 +40,6 @@ public class ConnectionTest {
       connection.close();
     }
 
-    @Override public void idle(Connection<Message> connection) {
-    }
-
     @Override public void closed(Connection<Message> connection) {}
 
     @Override public void garbledMessage(Connection<Message> connection, String message, byte[] data) {
@@ -235,7 +232,6 @@ public class ConnectionTest {
         }
 
         @Override public void messages(Connection<String> connection, Iterator<String> messages) {}
-        @Override public void idle(Connection<String> connection) {}
         @Override public void closed(Connection<String> connection) {}
         @Override public void garbledMessage(Connection<String> connection, String garbledMessage, byte[] data) {}
         @Override public void sent(ByteBuffer buffer) {}

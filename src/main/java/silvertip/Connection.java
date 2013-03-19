@@ -35,8 +35,6 @@ public class Connection<T> implements EventSource {
 
     void messages(Connection<T> connection, Iterator<T> messages);
 
-    void idle(Connection<T> connection);
-
     void closed(Connection<T> connection);
 
     void garbledMessage(Connection<T> connection, String message, byte[] data);
@@ -181,7 +179,6 @@ public class Connection<T> implements EventSource {
   }
 
   @Override public void timeout() {
-    callback.idle(this);
   }
 
   @Override public EventSource accept() throws IOException {
