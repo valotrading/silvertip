@@ -127,10 +127,6 @@ public class Events {
     return true;
   }
 
-  public boolean isStopped() {
-    return stopped;
-  }
-
   private void unregisterClosed() {
     Iterator<EventSource> it = sources.iterator();
     while (it.hasNext()) {
@@ -180,10 +176,5 @@ public class Events {
     }
     for (EventSource source : newSources)
       register(source);
-  }
-
-  public void stop() {
-    stopped = true;
-    selector.wakeup();
   }
 }

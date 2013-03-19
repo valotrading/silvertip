@@ -42,7 +42,7 @@ public class ConsoleClient {
               String m = messages.next();
               if ("GBAI\n".equals(m)) {
                 connection.send("GBAI\n".getBytes());
-                events.stop();
+                connection.close();
               }
             }
           }
@@ -68,7 +68,7 @@ public class ConsoleClient {
 
     events.register(commandLine);
     events.register(connection);
-    while (!events.isStopped()) {
+    while (true) {
       if (!events.process(30 * 1000))
         break;
     }
