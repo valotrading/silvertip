@@ -55,7 +55,10 @@ public class ConnectionSendTest {
     final Events events = Events.open();
     Connection<Message> connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
     events.register(connection);
-    events.dispatch(100);
+    while (!events.isStopped()) {
+      if (!events.process(100))
+        break;
+    }
     server.awaitForStop();
     events.stop();
     Assert.assertEquals(callback.total, server.total);

@@ -86,13 +86,6 @@ public class Events {
     sources.add(source);
   }
 
-  public void dispatch(long timeout) throws IOException {
-    while (!isStopped()) {
-      if (!process(timeout))
-        break;
-    }
-  }
-
   public boolean process(long timeout) throws IOException {
     while (timeout > 0) {
       long start = System.nanoTime();

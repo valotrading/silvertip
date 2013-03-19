@@ -59,7 +59,10 @@ public class PingClient implements Runnable {
       Events events = Events.open();
       events.register(connection);
       connection.send("HELO\n".getBytes());
-      events.dispatch(100);
+      while (!events.isStopped()) {
+        if (!events.process(100))
+          break;
+      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

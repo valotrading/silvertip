@@ -218,7 +218,10 @@ public class ConnectionTest {
         Connection<Message> connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
         Events events = Events.open();
         events.register(connection);
-        events.dispatch(IDLE_MSEC);
+        while (!events.isStopped()) {
+          if (!events.process(IDLE_MSEC))
+            break;
+        }
       }
     } finally {
       server.stop();
@@ -290,7 +293,10 @@ public class ConnectionTest {
       try {
         Events events = Events.open();
         events.register(server);
-        events.dispatch(IDLE_MSEC);
+        while (!events.isStopped()) {
+          if (!events.process(IDLE_MSEC))
+            break;
+        }
       } catch (IOException e) {
         throw new RuntimeException(e);
       } finally {

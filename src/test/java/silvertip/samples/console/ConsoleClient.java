@@ -68,6 +68,9 @@ public class ConsoleClient {
 
     events.register(commandLine);
     events.register(connection);
-    events.dispatch(30 * 1000);
+    while (!events.isStopped()) {
+      if (!events.process(30 * 1000))
+        break;
+    }
   }
 }
