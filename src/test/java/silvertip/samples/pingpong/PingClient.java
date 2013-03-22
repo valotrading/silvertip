@@ -32,19 +32,20 @@ public class PingClient implements Runnable {
       final Connection<String> connection = Connection.connect(new InetSocketAddress(hostname, port),
           new PingPongMessageParser(), new Connection.Callback<String>() {
             @Override public void connected(Connection<String> connection) {
+              connection.send("PING\n".getBytes());
             }
 
             @Override public void messages(Connection<String> connection, Iterator<String> messages) {
               while (messages.hasNext()) {
                 String m = messages.next();
+                if ("PONG\n".equals(m)) {
+                  connection.send("PING\n".getBytes());
+                }
+
                 if ("GBAI\n".equals(m)) {
                   connection.send("GBAI\n".getBytes());
                 }
               }
-            }
-
-            @Override public void idle(Connection<String> connection) {
-              connection.send("PING\n".getBytes());
             }
 
             @Override public void closed(Connection<String> connection) {
@@ -59,7 +60,10 @@ public class PingClient implements Runnable {
       Events events = Events.open();
       events.register(connection);
       connection.send("HELO\n".getBytes());
-      events.dispatch(100);
+      while (true) {
+        if (!events.process(100))
+          break;
+      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

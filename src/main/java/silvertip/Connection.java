@@ -21,7 +21,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,8 +34,6 @@ public class Connection<T> implements EventSource {
 
     void messages(Connection<T> connection, Iterator<T> messages);
 
-    void idle(Connection<T> connection);
-
     void closed(Connection<T> connection);
 
     void garbledMessage(Connection<T> connection, String message, byte[] data);
@@ -44,10 +41,11 @@ public class Connection<T> implements EventSource {
     void sent(ByteBuffer buffer);
   }
 
-  private List<ByteBuffer> txBuffers = Collections.synchronizedList(new LinkedList<ByteBuffer>());
+  private List<ByteBuffer> txBuffers = new LinkedList<ByteBuffer>();
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
   private SelectionKey selectionKey;
   private SocketChannel channel;
+  private Events events;
   private MessageParser<T> parser;
   private Callback<T> callback;
 
@@ -65,32 +63,29 @@ public class Connection<T> implements EventSource {
     this.parser = parser;
   }
 
-  @Override public SelectionKey register(Selector selector, int ops) throws IOException {
-    selectionKey = channel.register(selector, ops);
+  @Override public SelectionKey register(Events events) throws IOException {
+    this.selectionKey = channel.register(events.selector(), SelectionKey.OP_READ);
+    this.events = events;
+
     callback.connected(this);
+
     return selectionKey;
   }
 
-  @Override public void unregister() {
-    callback.closed(this);
-  }
-
   @Override public void read() throws IOException {
-    if (channel.isOpen()) {
-      int len;
-      try {
-        len = channel.read(rxBuffer);
-      } catch (IOException e) {
-        len = -1;
+    int len;
+    try {
+      len = channel.read(rxBuffer);
+    } catch (IOException e) {
+      len = -1;
+    }
+    if (len > 0) {
+      Iterator<T> messages = parse();
+      if (messages.hasNext()) {
+        callback.messages(this, messages);
       }
-      if (len > 0) {
-        Iterator<T> messages = parse();
-        if (messages.hasNext()) {
-          callback.messages(this, messages);
-        }
-      } else if (len < 0) {
-        close();
-      }
+    } else if (len < 0) {
+      close();
     }
   }
 
@@ -143,6 +138,11 @@ public class Connection<T> implements EventSource {
   }
 
   public void close() {
+    if (events != null)
+      events.unregister(this);
+
+    callback.closed(this);
+
     try {
       while (!txBuffers.isEmpty())
         flush();
@@ -158,16 +158,14 @@ public class Connection<T> implements EventSource {
   }
 
   private void flush() throws IOException {
-    synchronized(txBuffers) {
-      while (!txBuffers.isEmpty()) {
-        ByteBuffer txBuffer = txBuffers.get(0);
-        if (!write(txBuffer)) {
-          selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-          selectionKey.selector().wakeup();
-          break;
-        }
-        txBuffers.remove(0);
+    while (!txBuffers.isEmpty()) {
+      ByteBuffer txBuffer = txBuffers.get(0);
+      if (!write(txBuffer)) {
+        selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+        selectionKey.selector().wakeup();
+        break;
       }
+      txBuffers.remove(0);
     }
   }
 
@@ -180,16 +178,7 @@ public class Connection<T> implements EventSource {
     return true;
   }
 
-  @Override public void timeout() {
-    callback.idle(this);
-  }
-
   @Override public EventSource accept() throws IOException {
     throw new UnsupportedOperationException();
-  }
-
-  @Override public boolean isClosed() {
-    SocketChannel sc = (SocketChannel) selectionKey.channel();
-    return !sc.isOpen();
   }
 }

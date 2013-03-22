@@ -31,6 +31,8 @@ import silvertip.Server.ConnectionFactory;
 public class PongServer implements Runnable {
   private final CountDownLatch done = new CountDownLatch(1);
 
+  private boolean closed;
+
   public static void main(String[] args) {
     PongServer server = new PongServer();
     server.run();
@@ -73,11 +75,8 @@ public class PongServer implements Runnable {
               connection.send(message.getBytes());
             }
 
-            @Override public void idle(Connection<String> connection) {
-            }
-
             @Override public void closed(Connection<String> connection) {
-              events.stop();
+              closed = true;
             }
 
             @Override public void garbledMessage(Connection<String> connection, String message, byte[] data) {
@@ -90,8 +89,10 @@ public class PongServer implements Runnable {
       });
       events.register(server);
       done.countDown();
-      events.dispatch(50);
-      server.close();
+      while (!closed) {
+        if (!events.process(50))
+          break;
+      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

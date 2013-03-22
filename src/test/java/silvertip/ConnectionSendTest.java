@@ -55,36 +55,36 @@ public class ConnectionSendTest {
     final Events events = Events.open();
     Connection<Message> connection = Connection.connect(new InetSocketAddress("localhost", port), parser, callback);
     events.register(connection);
-    events.dispatch(100);
+    while (true) {
+      if (!events.process(100))
+        break;
+    }
     server.awaitForStop();
-    events.stop();
     Assert.assertEquals(callback.total, server.total);
   }
 
   private final class Callback implements Connection.Callback<Message> {
-    private int count;
     private int start;
     private int total;
 
     @Override public void connected(Connection<Message> connection) {
-    }
-
-    @Override public void idle(Connection<Message> connection) {
       Random generator = new Random();
-      List<Message> messages = new ArrayList<Message>();
-      for (int i = 0; i < 100; i++) {
-        int end = start + generator.nextInt(1024);
-        Message message = newMessage(start, end);
-        messages.add(message);
-        start = end;
+
+      for (int i = 0; i < 10; i++) {
+        List<Message> messages = new ArrayList<Message>();
+        for (int j = 0; j < 100; j++) {
+          int end = start + generator.nextInt(1024);
+          Message message = newMessage(start, end);
+          messages.add(message);
+          start = end;
+        }
+        for (Message m : messages) {
+          connection.send(m);
+          total += m.toByteBuffer().limit();
+        }
       }
-      for (Message m : messages) {
-        connection.send(m);
-        total += m.toByteBuffer().limit();
-      }
-      if (++count == 10) {
-        connection.close();
-      }
+
+      connection.close();
     }
 
     private Message newMessage(int start, int end) {
@@ -146,7 +146,6 @@ public class ConnectionSendTest {
             total++;
           }
         }
-        @Override public void idle(Connection<Integer> connection) {}
         @Override public void closed(Connection<Integer> connection) {
           closed = true;
         }

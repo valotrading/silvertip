@@ -43,6 +43,8 @@ public class CommandLine implements EventSource {
   private SelectionKey selectionKey;
   private final Callback callback;
   private SystemInPipe stdinPipe;
+  private Events events;
+
   private static ConsoleReader reader;
 
   public static CommandLine open(Callback callback) throws IOException {
@@ -70,11 +72,10 @@ public class CommandLine implements EventSource {
     this.stdinPipe = stdinPipe;
   }
 
-  public SelectionKey register(Selector selector, int ops) throws IOException {
-    return selectionKey = stdinPipe.getStdinChannel().register(selector, ops);
-  }
+  @Override public SelectionKey register(Events events) throws IOException {
+    this.events = events;
 
-  @Override public void unregister() {
+    return selectionKey = stdinPipe.getStdinChannel().register(events.selector(), SelectionKey.OP_READ);
   }
 
   @Override public void read() throws IOException {
@@ -94,10 +95,10 @@ public class CommandLine implements EventSource {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void timeout() {
-  }
-
   public void close() {
+    if (events != null)
+      events.unregister(this);
+
     selectionKey.attach(null);
     selectionKey.cancel();
     SelectableChannel sc = (SelectableChannel) selectionKey.channel();
@@ -106,10 +107,6 @@ public class CommandLine implements EventSource {
     } catch (IOException e) {
     }
     selectionKey.selector().wakeup();
-  }
-
-  @Override public boolean isClosed() {
-    return false;
   }
 
   public void setHistory(File historyFile) throws IOException {
