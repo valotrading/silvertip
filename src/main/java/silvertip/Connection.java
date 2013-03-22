@@ -41,7 +41,7 @@ public class Connection<T> implements EventSource {
     void sent(ByteBuffer buffer);
   }
 
-  private List<ByteBuffer> txBuffers = Collections.synchronizedList(new LinkedList<ByteBuffer>());
+  private List<ByteBuffer> txBuffers = new LinkedList<ByteBuffer>();
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
   private SelectionKey selectionKey;
   private SocketChannel channel;
@@ -158,16 +158,14 @@ public class Connection<T> implements EventSource {
   }
 
   private void flush() throws IOException {
-    synchronized(txBuffers) {
-      while (!txBuffers.isEmpty()) {
-        ByteBuffer txBuffer = txBuffers.get(0);
-        if (!write(txBuffer)) {
-          selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-          selectionKey.selector().wakeup();
-          break;
-        }
-        txBuffers.remove(0);
+    while (!txBuffers.isEmpty()) {
+      ByteBuffer txBuffer = txBuffers.get(0);
+      if (!write(txBuffer)) {
+        selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+        selectionKey.selector().wakeup();
+        break;
       }
+      txBuffers.remove(0);
     }
   }
 
