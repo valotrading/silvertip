@@ -181,4 +181,8 @@ public class Connection<T> implements EventSource {
   @Override public EventSource accept() throws IOException {
     throw new UnsupportedOperationException();
   }
+
+  @Override public boolean isClosed() {
+    return !channel.isOpen();
+  }
 }

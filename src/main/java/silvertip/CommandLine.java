@@ -95,6 +95,10 @@ public class CommandLine implements EventSource {
     throw new UnsupportedOperationException();
   }
 
+  @Override public boolean isClosed() {
+    return false;
+  }
+
   public void close() {
     if (events != null)
       events.unregister(this);

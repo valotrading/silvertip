@@ -26,4 +26,6 @@ public interface EventSource {
   void write() throws IOException;
 
   EventSource accept() throws IOException;
+
+  boolean isClosed();
 }
