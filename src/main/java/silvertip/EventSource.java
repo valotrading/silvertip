@@ -17,20 +17,13 @@ package silvertip;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 
 public interface EventSource {
-  SelectionKey register(Selector selector, int ops) throws IOException;
-
-  void unregister();
+  SelectionKey register(Events events) throws IOException;
 
   void read() throws IOException;
 
   void write() throws IOException;
 
   EventSource accept() throws IOException;
-
-  void timeout();
-
-  boolean isClosed();
 }

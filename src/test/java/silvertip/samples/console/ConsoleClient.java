@@ -42,13 +42,9 @@ public class ConsoleClient {
               String m = messages.next();
               if ("GBAI\n".equals(m)) {
                 connection.send("GBAI\n".getBytes());
-                events.stop();
+                connection.close();
               }
             }
-          }
-
-          @Override public void idle(Connection<String> connection) {
-            System.out.println("Idle detected.");
           }
 
           @Override public void closed(Connection<String> connection) {
@@ -68,6 +64,9 @@ public class ConsoleClient {
 
     events.register(commandLine);
     events.register(connection);
-    events.dispatch(30 * 1000);
+    while (true) {
+      if (!events.process(30 * 1000))
+        break;
+    }
   }
 }

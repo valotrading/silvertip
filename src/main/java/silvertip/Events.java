@@ -80,17 +80,18 @@ public class Events {
     this.selector = selector;
   }
 
+  public Selector selector() {
+    return selector;
+  }
+
   public void register(EventSource source) throws IOException {
-    SelectionKey result = source.register(selector, SelectionKey.OP_READ);
+    SelectionKey result = source.register(this);
     result.attach(source);
     sources.add(source);
   }
 
-  public void dispatch(long timeout) throws IOException {
-    while (!isStopped()) {
-      if (!process(timeout))
-        break;
-    }
+  public void unregister(EventSource source) {
+    sources.remove(source);
   }
 
   public boolean process(long timeout) throws IOException {
@@ -98,8 +99,6 @@ public class Events {
       long start = System.nanoTime();
       int numKeys = selector.select(timeout);
       long end = System.nanoTime();
-
-      unregisterClosed();
 
       if (selector.keys().isEmpty())
         return false;
@@ -111,7 +110,6 @@ public class Events {
 
       timeout -= TimeUnit.NANOSECONDS.toMillis(end - start);
       if (timeout <= 0) {
-        timeout();
         break;
       }
     }
@@ -121,40 +119,13 @@ public class Events {
   public boolean processNow() throws IOException {
     int numKeys = selector.selectNow();
 
-    unregisterClosed();
-
     if (selector.keys().isEmpty())
       return false;
 
     if (numKeys > 0)
       dispatchMessages();
-    else
-      timeout();
 
     return true;
-  }
-
-  public boolean isStopped() {
-    return stopped;
-  }
-
-  private void unregisterClosed() {
-    Iterator<EventSource> it = sources.iterator();
-    while (it.hasNext()) {
-      EventSource source = it.next();
-      if (source.isClosed()) {
-        source.unregister();
-        it.remove();
-      }
-    }
-  }
-
-  private void timeout() {
-    Iterator<EventSource> it = sources.iterator();
-    while (it.hasNext()) {
-      EventSource source = it.next();
-      source.timeout();
-    }
   }
 
   private void dispatchMessages() throws IOException {
@@ -187,10 +158,5 @@ public class Events {
     }
     for (EventSource source : newSources)
       register(source);
-  }
-
-  public void stop() {
-    stopped = true;
-    selector.wakeup();
   }
 }
