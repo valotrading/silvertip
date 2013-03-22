@@ -70,7 +70,6 @@ import java.util.concurrent.TimeUnit;
 public class Events {
   private List<EventSource> sources = new ArrayList<EventSource>();
   private Selector selector;
-  private boolean stopped;
 
   public static Events open() throws IOException {
     return new Events(Selector.open());
@@ -78,6 +77,10 @@ public class Events {
 
   public Events(Selector selector) {
     this.selector = selector;
+  }
+
+  public void close() throws IOException {
+    selector.close();
   }
 
   public Selector selector() {
