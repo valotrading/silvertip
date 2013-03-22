@@ -78,9 +78,6 @@ public class CommandLine implements EventSource {
     return selectionKey = stdinPipe.getStdinChannel().register(events.selector(), SelectionKey.OP_READ);
   }
 
-  @Override public void unregister() {
-  }
-
   @Override public void read() throws IOException {
     ReadableByteChannel sc = stdinPipe.getStdinChannel();
     ByteBuffer rxBuffer = ByteBuffer.allocate(255);

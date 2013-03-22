@@ -21,8 +21,6 @@ import java.nio.channels.SelectionKey;
 public interface EventSource {
   SelectionKey register(Events events) throws IOException;
 
-  void unregister();
-
   void read() throws IOException;
 
   void write() throws IOException;

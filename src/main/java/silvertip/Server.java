@@ -57,9 +57,6 @@ public class Server implements EventSource {
     return serverChannel.register(events.selector(), SelectionKey.OP_ACCEPT);
   }
 
-  @Override public void unregister() {
-  }
-
   @Override public void read() throws IOException {
     throw new UnsupportedOperationException();
   }

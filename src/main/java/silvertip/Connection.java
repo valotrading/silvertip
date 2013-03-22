@@ -72,10 +72,6 @@ public class Connection<T> implements EventSource {
     return selectionKey;
   }
 
-  @Override public void unregister() {
-    callback.closed(this);
-  }
-
   @Override public void read() throws IOException {
     int len;
     try {
