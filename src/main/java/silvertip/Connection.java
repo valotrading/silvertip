@@ -45,6 +45,7 @@ public class Connection<T> implements EventSource {
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
   private SelectionKey selectionKey;
   private SocketChannel channel;
+  private Events events;
   private MessageParser<T> parser;
   private Callback<T> callback;
 
@@ -63,8 +64,11 @@ public class Connection<T> implements EventSource {
   }
 
   @Override public SelectionKey register(Events events) throws IOException {
-    selectionKey = channel.register(events.selector(), SelectionKey.OP_READ);
+    this.selectionKey = channel.register(events.selector(), SelectionKey.OP_READ);
+    this.events = events;
+
     callback.connected(this);
+
     return selectionKey;
   }
 
@@ -73,21 +77,19 @@ public class Connection<T> implements EventSource {
   }
 
   @Override public void read() throws IOException {
-    if (channel.isOpen()) {
-      int len;
-      try {
-        len = channel.read(rxBuffer);
-      } catch (IOException e) {
-        len = -1;
+    int len;
+    try {
+      len = channel.read(rxBuffer);
+    } catch (IOException e) {
+      len = -1;
+    }
+    if (len > 0) {
+      Iterator<T> messages = parse();
+      if (messages.hasNext()) {
+        callback.messages(this, messages);
       }
-      if (len > 0) {
-        Iterator<T> messages = parse();
-        if (messages.hasNext()) {
-          callback.messages(this, messages);
-        }
-      } else if (len < 0) {
-        close();
-      }
+    } else if (len < 0) {
+      close();
     }
   }
 
@@ -140,6 +142,11 @@ public class Connection<T> implements EventSource {
   }
 
   public void close() {
+    if (events != null)
+      events.unregister(this);
+
+    callback.closed(this);
+
     try {
       while (!txBuffers.isEmpty())
         flush();

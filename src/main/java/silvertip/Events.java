@@ -90,13 +90,15 @@ public class Events {
     sources.add(source);
   }
 
+  public void unregister(EventSource source) {
+    sources.remove(source);
+  }
+
   public boolean process(long timeout) throws IOException {
     while (timeout > 0) {
       long start = System.nanoTime();
       int numKeys = selector.select(timeout);
       long end = System.nanoTime();
-
-      unregisterClosed();
 
       if (selector.keys().isEmpty())
         return false;
@@ -117,8 +119,6 @@ public class Events {
   public boolean processNow() throws IOException {
     int numKeys = selector.selectNow();
 
-    unregisterClosed();
-
     if (selector.keys().isEmpty())
       return false;
 
@@ -126,17 +126,6 @@ public class Events {
       dispatchMessages();
 
     return true;
-  }
-
-  private void unregisterClosed() {
-    Iterator<EventSource> it = sources.iterator();
-    while (it.hasNext()) {
-      EventSource source = it.next();
-      if (source.isClosed()) {
-        source.unregister();
-        it.remove();
-      }
-    }
   }
 
   private void dispatchMessages() throws IOException {

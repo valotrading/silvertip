@@ -43,6 +43,8 @@ public class CommandLine implements EventSource {
   private SelectionKey selectionKey;
   private final Callback callback;
   private SystemInPipe stdinPipe;
+  private Events events;
+
   private static ConsoleReader reader;
 
   public static CommandLine open(Callback callback) throws IOException {
@@ -71,6 +73,8 @@ public class CommandLine implements EventSource {
   }
 
   @Override public SelectionKey register(Events events) throws IOException {
+    this.events = events;
+
     return selectionKey = stdinPipe.getStdinChannel().register(events.selector(), SelectionKey.OP_READ);
   }
 
@@ -95,6 +99,9 @@ public class CommandLine implements EventSource {
   }
 
   public void close() {
+    if (events != null)
+      events.unregister(this);
+
     selectionKey.attach(null);
     selectionKey.cancel();
     SelectableChannel sc = (SelectableChannel) selectionKey.channel();

@@ -29,6 +29,7 @@ public class Server implements EventSource {
 
   private final ServerSocketChannel serverChannel;
   private final ConnectionFactory<?> factory;
+  private Events events;
 
   public static Server accept(int port, ConnectionFactory<?> factory) throws IOException {
     ServerSocketChannel serverChannel = ServerSocketChannel.open();
@@ -44,10 +45,15 @@ public class Server implements EventSource {
   }
 
   public void close() throws IOException {
+    if (events != null)
+      events.unregister(this);
+
     serverChannel.close();
   }
 
   @Override public SelectionKey register(Events events) throws IOException {
+    this.events = events;
+
     return serverChannel.register(events.selector(), SelectionKey.OP_ACCEPT);
   }
 
