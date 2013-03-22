@@ -23,14 +23,14 @@ Ivy, update the resolver chain in your `ivysettings.xml`:
 and declare a dependency to Silvertip by updating `ivy.xml`:
 
     <dependencies>
-      <dependency org="silvertip" name="silvertip" rev="0.3.5"/>
+      <dependency org="silvertip" name="silvertip" rev="0.4.0"/>
     </dependencies>
 
 If you're using SBT, amend your `build.sbt` with:
 
     resolvers += "valotrading" at "http://valotrading.github.com/maven"
 
-    libraryDependencies += "silvertip" % "silvertip" % "0.3.5"
+    libraryDependencies += "silvertip" % "silvertip" % "0.4.0"
 
 ## License
 
