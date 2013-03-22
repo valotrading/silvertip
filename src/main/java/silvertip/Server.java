@@ -78,8 +78,4 @@ public class Server implements EventSource {
 
     return connection;
   }
-
-  @Override public boolean isClosed() {
-    return !serverChannel.isOpen();
-  }
 }

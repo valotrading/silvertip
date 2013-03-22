@@ -109,10 +109,6 @@ public class CommandLine implements EventSource {
     selectionKey.selector().wakeup();
   }
 
-  @Override public boolean isClosed() {
-    return false;
-  }
-
   public void setHistory(File historyFile) throws IOException {
     reader.setHistory(new History(historyFile));
   }
