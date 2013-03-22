@@ -80,8 +80,12 @@ public class Events {
     this.selector = selector;
   }
 
+  public Selector selector() {
+    return selector;
+  }
+
   public void register(EventSource source) throws IOException {
-    SelectionKey result = source.register(selector);
+    SelectionKey result = source.register(this);
     result.attach(source);
     sources.add(source);
   }

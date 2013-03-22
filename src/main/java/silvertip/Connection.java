@@ -21,7 +21,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,8 +62,8 @@ public class Connection<T> implements EventSource {
     this.parser = parser;
   }
 
-  @Override public SelectionKey register(Selector selector) throws IOException {
-    selectionKey = channel.register(selector, SelectionKey.OP_READ);
+  @Override public SelectionKey register(Events events) throws IOException {
+    selectionKey = channel.register(events.selector(), SelectionKey.OP_READ);
     callback.connected(this);
     return selectionKey;
   }

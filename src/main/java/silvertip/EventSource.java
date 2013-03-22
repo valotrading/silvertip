@@ -17,10 +17,9 @@ package silvertip;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 
 public interface EventSource {
-  SelectionKey register(Selector selector) throws IOException;
+  SelectionKey register(Events events) throws IOException;
 
   void unregister();
 
