@@ -47,7 +47,7 @@ public class Server implements EventSource {
     serverChannel.close();
   }
 
-  @Override public SelectionKey register(Selector selector, int ops) throws IOException {
+  @Override public SelectionKey register(Selector selector) throws IOException {
     return serverChannel.register(selector, SelectionKey.OP_ACCEPT);
   }
 

@@ -81,7 +81,7 @@ public class Events {
   }
 
   public void register(EventSource source) throws IOException {
-    SelectionKey result = source.register(selector, SelectionKey.OP_READ);
+    SelectionKey result = source.register(selector);
     result.attach(source);
     sources.add(source);
   }

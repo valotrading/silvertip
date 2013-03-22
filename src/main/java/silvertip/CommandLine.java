@@ -70,8 +70,8 @@ public class CommandLine implements EventSource {
     this.stdinPipe = stdinPipe;
   }
 
-  public SelectionKey register(Selector selector, int ops) throws IOException {
-    return selectionKey = stdinPipe.getStdinChannel().register(selector, ops);
+  public SelectionKey register(Selector selector) throws IOException {
+    return selectionKey = stdinPipe.getStdinChannel().register(selector, SelectionKey.OP_READ);
   }
 
   @Override public void unregister() {

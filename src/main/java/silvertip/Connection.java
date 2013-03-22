@@ -63,8 +63,8 @@ public class Connection<T> implements EventSource {
     this.parser = parser;
   }
 
-  @Override public SelectionKey register(Selector selector, int ops) throws IOException {
-    selectionKey = channel.register(selector, ops);
+  @Override public SelectionKey register(Selector selector) throws IOException {
+    selectionKey = channel.register(selector, SelectionKey.OP_READ);
     callback.connected(this);
     return selectionKey;
   }

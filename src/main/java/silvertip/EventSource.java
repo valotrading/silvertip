@@ -20,7 +20,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 
 public interface EventSource {
-  SelectionKey register(Selector selector, int ops) throws IOException;
+  SelectionKey register(Selector selector) throws IOException;
 
   void unregister();
 
