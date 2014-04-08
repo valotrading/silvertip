@@ -159,8 +159,8 @@ public class Events {
 
       it.remove();
     }
-    for (EventSource source : newSources)
-      register(source);
+    for (int i = 0; i < newSources.size(); i++)
+      register(newSources.get(i));
 
     if (!newSources.isEmpty())
       newSources.clear();
