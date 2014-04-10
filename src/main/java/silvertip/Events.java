@@ -69,6 +69,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Events {
   private List<EventSource> sources = new ArrayList<EventSource>();
+  private List<EventSource> newSources = new ArrayList<EventSource>();
   private Selector selector;
 
   public static Events open() throws IOException {
@@ -132,7 +133,6 @@ public class Events {
   }
 
   private void dispatchMessages() throws IOException {
-    List<EventSource> newSources = new ArrayList<EventSource>();
     Iterator<SelectionKey> it = selector.selectedKeys().iterator();
     while (it.hasNext()) {
       SelectionKey key = it.next();
@@ -159,7 +159,10 @@ public class Events {
 
       it.remove();
     }
-    for (EventSource source : newSources)
-      register(source);
+    for (int i = 0; i < newSources.size(); i++)
+      register(newSources.get(i));
+
+    if (!newSources.isEmpty())
+      newSources.clear();
   }
 }
