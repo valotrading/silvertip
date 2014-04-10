@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -e
+
+set_version() {
+    mvn versions:set -DallowSnapshots=true -DgenerateBackupPoms=false -DnewVersion="$1"
+    mvn -N versions:update-child-modules -DgenerateBackupPoms=false
+}
+
+if [ $# -ne 2 ]; then
+    echo "Usage: `basename $0` <release-version> <new-development-version>"
+    exit 2
+fi
+
+if [ -n "$(git status --porcelain)" ]; then
+    echo "Your repository contains local changes or unversioned files. Aborting." >&2
+    exit 1
+fi
+
+release_version=$1
+next_version=$2-SNAPSHOT
+
+set_version $release_version
+
+git commit --signoff --all --message "Silvertip $release_version"
+git tag --annotate --message "Silvertip $release_version" "v$release_version"
+
+set_version $next_version
+
+git commit --signoff --all --message "Silvertip $next_version"
