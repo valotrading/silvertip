@@ -7,30 +7,23 @@ the complexities of the Java NIO API. While similar libraries exist, they are
 either hard to use, discontinued, or part of a bigger application framework
 that offer an API for using different transports.
 
-## Installation
+## Download
 
-Silvertip is made available through a Maven repository. If you're using Apache
-Ivy, update the resolver chain in your `ivysettings.xml`:
+Add a dependency to Silvertip:
 
-    <resolvers>
-      <chain name="main">
-        <ibiblio name="silvertip-repository"
-          root="http://valotrading.github.com/maven"
-          m2compatible="true"/>
-      </chain>
-    </resolvers>
+    <dependency>
+      <groupId>silvertip</groupId>
+      <artifactId>silvertip</artifactId>
+      <version><!-- (latest version) --></version>
+    </dependency>
 
-and declare a dependency to Silvertip by updating `ivy.xml`:
+Because Silvertip is not available in the Central Repository, you need to add
+Silvertip's repository as well:
 
-    <dependencies>
-      <dependency org="silvertip" name="silvertip" rev="0.4.1"/>
-    </dependencies>
-
-If you're using SBT, amend your `build.sbt` with:
-
-    resolvers += "valotrading" at "http://valotrading.github.com/maven"
-
-    libraryDependencies += "silvertip" % "silvertip" % "0.4.1"
+    <repository>
+      <id>valotrading</id>
+      <url>http://valotrading.github.io/maven</url>
+    </repository>
 
 ## License
 
