@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e
+
+if [ $# -ne 2 ]; then
+    echo "Usage: `basename $0` <version> <deployment-repository>"
+    exit 2
+fi
+
+if [ -n "$(git status --porcelain)" ]; then
+    echo "Your repository contains local changes or unversioned files. Aborting." >&2
+    exit 1
+fi
+
+version=$1
+deployment_repository=$2
+
+git checkout "v$version"
+
+mvn deploy -DaltDeploymentRepository=mine::default::file://$deployment_repository
+
+git checkout -
