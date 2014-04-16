@@ -17,6 +17,6 @@ deployment_repository=$2
 
 git checkout "v$version"
 
-mvn deploy -DaltDeploymentRepository=mine::default::file://$deployment_repository
+mvn clean deploy -DaltDeploymentRepository=mine::default::file://$deployment_repository
 
 git checkout -
