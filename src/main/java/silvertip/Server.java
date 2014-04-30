@@ -61,10 +61,6 @@ public class Server implements EventSource {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void write() throws IOException {
-    throw new UnsupportedOperationException();
-  }
-
   @Override public EventSource accept() throws IOException {
     SocketChannel channel = serverChannel.accept();
     if (channel == null)
