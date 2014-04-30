@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -35,8 +34,8 @@ public class ConnectionTest {
   private static class Callback implements Connection.Callback<Message> {
     @Override public void connected(Connection<Message> connection) {}
 
-    @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-      Assert.fail("messages detected");
+    @Override public void message(Connection<Message> connection, Message message) {
+      Assert.fail("message detected");
       connection.close();
     }
 
@@ -90,16 +89,14 @@ public class ConnectionTest {
 
   @Test
   public void multipleMessages() throws Exception {
-    final String message = "ABC";
+    final String messages = "ABC";
     final AtomicReference<String> receivedMessages = new AtomicReference("");
 
     Callback callback = new Callback() {
-      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        while (messages.hasNext()) {
-          receivedMessages.set(receivedMessages.get() + messages.next());
-        }
+      @Override public void message(Connection<Message> connection, Message message) {
+        receivedMessages.set(receivedMessages.get() + message);
 
-        if (receivedMessages.get().length() == message.length())
+        if (receivedMessages.get().length() == messages.length())
           connection.close();
       }
     };
@@ -112,9 +109,9 @@ public class ConnectionTest {
       }
     };
 
-    sendMessage(message, callback, parser);
+    sendMessage(messages, callback, parser);
 
-    Assert.assertEquals(message, receivedMessages.get());
+    Assert.assertEquals(messages, receivedMessages.get());
   }
 
   @Test
@@ -124,9 +121,8 @@ public class ConnectionTest {
     final AtomicReference<String> receivedMessage = new AtomicReference(null);
 
     Callback callback = new Callback() {
-      @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
-        if (messages.hasNext())
-          receivedMessage.set(messages.next().toString());
+      @Override public void message(Connection<Message> connection, Message message) {
+        receivedMessage.set(message.toString());
       }
 
       @Override public void closed(Connection<Message> connection) {
@@ -231,7 +227,7 @@ public class ConnectionTest {
             connection.close();
         }
 
-        @Override public void messages(Connection<String> connection, Iterator<String> messages) {}
+        @Override public void message(Connection<String> connection, String messages) {}
         @Override public void closed(Connection<String> connection) {}
         @Override public void garbledMessage(Connection<String> connection, String garbledMessage, byte[] data) {}
         @Override public void sent(ByteBuffer buffer) {}

@@ -50,10 +50,8 @@ import java.util.concurrent.TimeUnit;
  *   };
  *   Events events = Events.open();
  *   Connection connection = Connection.connect(address, parser, new Connection.Callback() {
- *     public void messages(Connection connection, Iterator<Message> messages) {
- *       while (messages.hasNext()) {
- *         System.out.println(messages.next());
- *       }
+ *     public void message(Connection connection, Message message) {
+ *       System.out.println(message);
  *     }
  *     public void idle(Connection connection) {
  *       // This callback is called every 30 seconds if there's no activity.

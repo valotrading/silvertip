@@ -22,7 +22,6 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -96,7 +95,7 @@ public class ConnectionSendTest {
       return new Message(m);
     }
 
-    @Override public void messages(Connection<Message> connection, Iterator<Message> messages) {
+    @Override public void message(Connection<Message> connection, Message message) {
       Assert.fail();
     }
 
@@ -139,12 +138,10 @@ public class ConnectionSendTest {
         @Override public void connected(Connection<Integer> connection) {}
 
         int count = 0;
-        @Override public void messages(Connection<Integer> connection, Iterator<Integer> messages) {
-          while (messages.hasNext()) {
-            int ch = messages.next();
-            Assert.assertEquals(count++ % 256, ch);
-            total++;
-          }
+        @Override public void message(Connection<Integer> connection, Integer message) {
+          int ch = message;
+          Assert.assertEquals(count++ % 256, ch);
+          total++;
         }
         @Override public void closed(Connection<Integer> connection) {
           closed = true;

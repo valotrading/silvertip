@@ -22,16 +22,13 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 public class Connection<T> implements EventSource {
   public interface Callback<T> {
     void connected(Connection<T> connection);
 
-    void messages(Connection<T> connection, Iterator<T> messages);
+    void message(Connection<T> connection, T message);
 
     void closed(Connection<T> connection);
 
@@ -78,31 +75,22 @@ public class Connection<T> implements EventSource {
       len = -1;
     }
     if (len > 0) {
-      Iterator<T> messages = parse();
-      if (messages.hasNext()) {
-        callback.messages(this, messages);
+      rxBuffer.flip();
+      while (rxBuffer.hasRemaining()) {
+        rxBuffer.mark();
+        try {
+          callback.message(this, parser.parse(rxBuffer));
+        } catch (PartialMessageException e) {
+          rxBuffer.reset();
+          break;
+        } catch (GarbledMessageException e) {
+          callback.garbledMessage(this, e.getMessage(), e.getMessageData());
+        }
       }
+      rxBuffer.compact();
     } else if (len < 0) {
       close();
     }
-  }
-
-  private Iterator<T> parse() throws IOException {
-    rxBuffer.flip();
-    List<T> result = new ArrayList<T>();
-    while (rxBuffer.hasRemaining()) {
-      rxBuffer.mark();
-      try {
-        result.add(parser.parse(rxBuffer));
-      } catch (PartialMessageException e) {
-        rxBuffer.reset();
-        break;
-      } catch (GarbledMessageException e) {
-        callback.garbledMessage(this, e.getMessage(), e.getMessageData());
-      }
-    }
-    rxBuffer.compact();
-    return result.iterator();
   }
 
   public void send(byte[] byteArray) {
