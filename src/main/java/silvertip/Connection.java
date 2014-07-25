@@ -25,7 +25,6 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 public class Connection<T> implements EventSource {
@@ -41,7 +40,6 @@ public class Connection<T> implements EventSource {
     void sent(ByteBuffer buffer);
   }
 
-  private List<ByteBuffer> txBuffers = new LinkedList<ByteBuffer>();
   private ByteBuffer rxBuffer = ByteBuffer.allocate(4096);
   private SelectionKey selectionKey;
   private SocketChannel channel;
@@ -117,24 +115,15 @@ public class Connection<T> implements EventSource {
 
   public void send(ByteBuffer buffer) {
     callback.sent(buffer);
-    txBuffers.add(buffer);
+
     if (selectionKey == null)
       throw new IllegalStateException("Connection is not registered");
     try {
-      flush();
+      while (buffer.hasRemaining())
+        channel.write(buffer);
     } catch (IOException e) {
       close();
     }
-  }
-
-  @Override public void write() throws IOException {
-    try {
-      flush();
-    } catch (IOException e) {
-      close();
-    }
-    if (txBuffers.isEmpty())
-      selectionKey.interestOps(SelectionKey.OP_READ);
   }
 
   public void close() {
@@ -143,39 +132,12 @@ public class Connection<T> implements EventSource {
 
     callback.closed(this);
 
-    try {
-      while (!txBuffers.isEmpty())
-        flush();
-    } catch (IOException e) {
-    }
-
     SocketChannel sc = (SocketChannel) selectionKey.channel();
     SocketChannels.close(sc);
 
     selectionKey.attach(null);
     selectionKey.cancel();
     selectionKey.selector().wakeup();
-  }
-
-  private void flush() throws IOException {
-    while (!txBuffers.isEmpty()) {
-      ByteBuffer txBuffer = txBuffers.get(0);
-      if (!write(txBuffer)) {
-        selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-        selectionKey.selector().wakeup();
-        break;
-      }
-      txBuffers.remove(0);
-    }
-  }
-
-  private boolean write(ByteBuffer txBuffer) throws IOException {
-    while (txBuffer.hasRemaining()) {
-      if (channel.write(txBuffer) == 0) {
-        return false;
-      }
-    }
-    return true;
   }
 
   @Override public EventSource accept() throws IOException {

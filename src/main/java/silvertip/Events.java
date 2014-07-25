@@ -150,9 +150,6 @@ public class Events {
             source.read();
           }
 
-          if (key.isWritable()) {
-            source.write();
-          }
         } catch (CancelledKeyException e) {
         }
       }
