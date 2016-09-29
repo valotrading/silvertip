@@ -18,7 +18,6 @@ package silvertip.samples.pingpong;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -49,13 +48,7 @@ public class PongServer implements Runnable {
             @Override public void connected(Connection<String> connection) {
             }
 
-            @Override public void messages(Connection<String> connection, Iterator<String> messages) {
-              while (messages.hasNext()) {
-                process(connection, messages.next());
-              }
-            }
-
-            private void process(Connection<String> connection, String message) {
+            @Override public void message(Connection<String> connection, String message) {
               System.out.print("< " + message);
               if ("HELO\n".equals(message))
                 send(connection, "HELO\n");

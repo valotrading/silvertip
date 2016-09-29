@@ -18,7 +18,6 @@ package silvertip.samples.pingpong;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.util.Iterator;
 
 import silvertip.Connection;
 import silvertip.Events;
@@ -35,16 +34,13 @@ public class PingClient implements Runnable {
               connection.send("PING\n".getBytes());
             }
 
-            @Override public void messages(Connection<String> connection, Iterator<String> messages) {
-              while (messages.hasNext()) {
-                String m = messages.next();
-                if ("PONG\n".equals(m)) {
-                  connection.send("PING\n".getBytes());
-                }
+            @Override public void message(Connection<String> connection, String message) {
+              if ("PONG\n".equals(message)) {
+                connection.send("PING\n".getBytes());
+              }
 
-                if ("GBAI\n".equals(m)) {
-                  connection.send("GBAI\n".getBytes());
-                }
+              if ("GBAI\n".equals(message)) {
+                connection.send("GBAI\n".getBytes());
               }
             }
 

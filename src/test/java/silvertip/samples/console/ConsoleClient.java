@@ -18,7 +18,6 @@ package silvertip.samples.console;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.util.Iterator;
 
 import silvertip.CommandLine;
 import silvertip.Connection;
@@ -37,13 +36,10 @@ public class ConsoleClient {
           @Override public void connected(Connection<String> connection) {
           }
 
-          @Override public void messages(Connection<String> connection, Iterator<String> messages) {
-            while (messages.hasNext()) {
-              String m = messages.next();
-              if ("GBAI\n".equals(m)) {
-                connection.send("GBAI\n".getBytes());
-                connection.close();
-              }
+          @Override public void message(Connection<String> connection, String message) {
+            if ("GBAI\n".equals(message)) {
+              connection.send("GBAI\n".getBytes());
+              connection.close();
             }
           }
 
